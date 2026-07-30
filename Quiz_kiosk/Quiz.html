@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Africa Rare Diseases Summit - Rare Recognition Quiz</title>
+    <!-- Google Fonts: Poppins & Outfit for exact aesthetic match -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        /* --- BRAND COLORS & SYSTEM VARS --- */
+        :root {
+            --bg-dark: #0b021a;
+            --bg-card: rgba(255, 255, 255, 0.05);
+            --bg-card-hover: rgba(255, 255, 255, 0.09);
+            --border-light: rgba(255, 255, 255, 0.12);
+            --border-glow: rgba(217, 70, 239, 0.4);
+
+            --gradient-primary: linear-gradient(135deg, #d946ef 0%, #8b5cf6 50%, #3b82f6 100%);
+            --gradient-btn: linear-gradient(90deg, #ec4899 0%, #8b5cf6 50%, #3b82f6 100%);
+            --gradient-gold: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+
+            --color-text-main: #ffffff;
+            --color-text-muted: #cbd5e1;
+            --color-text-dim: #94a3b8;
+            --color-pink: #ec4899;
+            --color-purple: #8b5cf6;
+            --color-blue: #3b82f6;
+            --color-success: #10b981;
+            --color-error: #ef4444;
+
+            --font-heading: 'Poppins', 'Outfit', sans-serif;
+            --font-body: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        /* --- GLOBAL RESET & KIOSK FIXED VIEWPORT --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html,
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: var(--bg-dark);
+            font-family: var(--font-body);
+            color: var(--color-text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- STAGE BACKGROUND & AMBIENT GLOW --- */
+        .stage-bg {
+            position: absolute;
+            inset: 0;
+            background: url('../assets/bg.png') no-repeat center center;
+            background-size: cover;
+            z-index: 1;
+        }
+
+        .bg-fallback {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 50% 20%, #2a084e 0%, #0b021a 75%);
+            z-index: 0;
+        }
+
+        .ambient-glow-top {
+            position: absolute;
+            top: -12%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 650px;
+            height: 650px;
+            background: radial-gradient(circle, rgba(236, 72, 153, 0.3) 0%, rgba(139, 92, 246, 0.18) 45%, transparent 70%);
+            filter: blur(70px);
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .ambient-glow-bottom {
+            position: absolute;
+            bottom: -12%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 750px;
+            height: 550px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.22) 0%, rgba(139, 92, 246, 0.12) 50%, transparent 70%);
+            filter: blur(90px);
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        /* --- KIOSK CONTAINER (1080 x 1920 DISPLAY ASPECT) --- */
+        #kiosk-app {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 1080px;
+            height: 100vh;
+            max-height: 1920px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+            padding: 2.5rem 2rem 2.2rem 2rem;
+        }
+
+        /* --- COMMON HEADER WITH AFRICA MAP LOGO --- */
+        .app-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            flex-shrink: 0;
+            padding-top: 1rem;
+            padding-bottom: 0.5rem;
+        }
+
+        .logo-wrapper {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .logo-glow {
+            position: absolute;
+            width: 180px;
+            height: 180px;
+            background: radial-gradient(circle, rgba(236, 72, 153, 0.45) 0%, rgba(139, 92, 246, 0.25) 60%, transparent 70%);
+            filter: blur(30px);
+            border-radius: 50%;
+        }
+
+        .app-logo {
+            height: 300px;
+            width: auto;
+            object-fit: contain;
+            position: relative;
+            z-index: 2;
+            filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.6));
+        }
+
+        /* --- SCREEN CONTAINER & TRANSITIONS --- */
+        .screen-stage {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .screen {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px) scale(0.98);
+            transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                visibility 0.4s;
+            pointer-events: none;
+        }
+
+        .screen.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+
+        /* --- SCREEN 1: WELCOME SCREEN (IMAGE 2 STYLING) --- */
+        #screen-welcome {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            gap: 2.8rem;
+            padding: 1rem;
+        }
+
+        .welcome-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.4rem;
+            max-width: 850px;
+        }
+
+        .hero-title {
+            font-family: var(--font-heading);
+            font-size: 36px;
+            font-weight: 800;
+            line-height: 1.1;
+            color: #ffffff;
+            text-shadow: 0 6px 25px rgba(0, 0, 0, 0.5);
+        }
+
+        .hero-subtitle {
+            font-size: 24px;
+            font-weight: 400;
+            color: #e2e8f0;
+            line-height: 1;
+            text-align: center;
+            max-width: 720px;
+        }
+
+        .begin-btn {
+            position: relative;
+            padding: 1.35rem 3.8rem;
+            font-family: var(--font-heading);
+            font-size: 22px;
+            font-weight: 700;
+            color: #ffffff;
+            background: var(--gradient-btn);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 14px 40px rgba(236, 72, 153, 0.45), inset 0 2px 4px rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 1rem;
+            letter-spacing: 0.02em;
+        }
+
+        .begin-btn:hover,
+        .begin-btn:active {
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 18px 50px rgba(236, 72, 153, 0.65), inset 0 2px 4px rgba(255, 255, 255, 0.5);
+        }
+
+        .begin-btn svg {
+            width: 28px;
+            height: 28px;
+            transition: transform 0.3s ease;
+        }
+
+        .begin-btn:hover svg {
+            transform: translateX(6px);
+        }
+
+        /* --- SCREEN 2: CATEGORY SELECTION --- */
+        /* --- SCREEN NAVBAR WITH LOGO ON LEFT & TITLE NEXT TO IT --- */
+        .screen-navbar {
+            display: flex;
+            align-items: center;
+            gap: 1.4rem;
+            padding: 1.1rem 1.6rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-light);
+            border-radius: 24px;
+            backdrop-filter: blur(16px);
+            margin-bottom: 1.5rem;
+            flex-shrink: 0;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+        }
+
+        .nav-logo-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .nav-logo {
+            height: 65px;
+            width: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+        }
+
+        .nav-title-wrap {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            flex: 1;
+        }
+
+        .nav-title {
+            font-family: var(--font-heading);
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1.2;
+        }
+
+        .nav-subtitle {
+            font-size: 0.98rem;
+            color: var(--color-text-dim);
+            line-height: 1.35;
+        }
+
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.25rem;
+            flex: 1;
+            align-content: center;
+        }
+
+        .category-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 24px;
+            padding: 1.6rem 1.4rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            cursor: pointer;
+            backdrop-filter: blur(16px);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .category-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--gradient-primary);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 0;
+        }
+
+        .category-card:hover,
+        .category-card:active {
+            background: var(--bg-card-hover);
+            border-color: rgba(236, 72, 153, 0.5);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(139, 92, 246, 0.25);
+        }
+
+        .category-card:hover::before {
+            opacity: 0.08;
+        }
+
+        .card-inner {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            justify-content: space-between;
+            gap: 0.8rem;
+        }
+
+        .card-icon-wrap {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-pink);
+            transition: all 0.3s ease;
+        }
+
+        .category-card:hover .card-icon-wrap {
+            background: var(--gradient-primary);
+            color: #ffffff;
+            border-color: transparent;
+            transform: scale(1.08);
+        }
+
+        .card-icon-wrap svg {
+            width: 30px;
+            height: 30px;
+        }
+
+        .card-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .card-title {
+            font-family: var(--font-heading);
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .card-desc {
+            font-size: 0.92rem;
+            color: var(--color-text-muted);
+            line-height: 1.35;
+        }
+
+        .card-footer-badge {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--color-pink);
+            margin-top: 0.4rem;
+        }
+
+        .card-footer-badge svg {
+            width: 18px;
+            height: 18px;
+            transition: transform 0.3s ease;
+        }
+
+        .category-card:hover .card-footer-badge svg {
+            transform: translateX(4px);
+        }
+
+        /* --- SCREEN 3: QUESTION VIEW --- */
+        .quiz-top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.2rem;
+        }
+
+        .specialty-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.5rem 1.2rem;
+            background: rgba(139, 92, 246, 0.2);
+            border: 1px solid rgba(139, 92, 246, 0.4);
+            border-radius: 50px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #e2e8f0;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .question-counter {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--color-pink);
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 50%;
+            background: var(--gradient-btn);
+            border-radius: 10px;
+            transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .question-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 24px;
+            padding: 1.8rem 1.8rem;
+            margin-bottom: 1.5rem;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .question-text {
+            font-family: var(--font-heading);
+            font-size: 1.35rem;
+            font-weight: 600;
+            line-height: 1.5;
+            color: #ffffff;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .option-btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1.5px solid rgba(255, 255, 255, 0.12);
+            border-radius: 20px;
+            padding: 1.2rem 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            text-align: left;
+        }
+
+        .option-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(236, 72, 153, 0.4);
+            transform: translateX(4px);
+        }
+
+        .option-btn.selected {
+            background: rgba(139, 92, 246, 0.25);
+            border-color: var(--color-purple);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+        }
+
+        .option-letter {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-heading);
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #ffffff;
+            flex-shrink: 0;
+            transition: all 0.25s ease;
+        }
+
+        .option-btn.selected .option-letter {
+            background: var(--gradient-btn);
+            border-color: transparent;
+            box-shadow: 0 4px 12px rgba(236, 72, 153, 0.4);
+        }
+
+        .option-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #e2e8f0;
+            line-height: 1.4;
+            flex: 1;
+        }
+
+        .action-footer {
+            margin-top: 1.5rem;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .next-btn {
+            padding: 1.1rem 2.8rem;
+            font-family: var(--font-heading);
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #ffffff;
+            background: var(--gradient-btn);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.8rem;
+            box-shadow: 0 8px 25px rgba(236, 72, 153, 0.35);
+            transition: all 0.3s ease;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .next-btn.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .next-btn.active:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 12px 35px rgba(236, 72, 153, 0.5);
+        }
+
+        /* --- SCREEN 4: COMPLETION & EXPLANATION --- */
+        #screen-completion {
+            gap: 1.2rem;
+        }
+
+        .score-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 28px;
+            padding: 1.5rem 1.8rem;
+            text-align: center;
+            backdrop-filter: blur(16px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.8rem;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4);
+        }
+
+        .trophy-badge {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(245, 158, 11, 0.3) 0%, rgba(217, 119, 6, 0.1) 70%);
+            border: 2px solid #f59e0b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fbbf24;
+            box-shadow: 0 0 25px rgba(245, 158, 11, 0.4);
+        }
+
+        .score-title {
+            font-family: var(--font-heading);
+            font-size: 2.1rem;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        .score-value-badge {
+            font-size: 1.3rem;
+            font-weight: 700;
+            padding: 0.4rem 1.5rem;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 50px;
+            color: #34d399;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Tab Switcher for Question Explanations */
+        .explanation-tabs {
+            display: flex;
+            gap: 0.8rem;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.4rem;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border-radius: 40px;
+            border: none;
+            background: transparent;
+            color: var(--color-text-muted);
+            font-family: var(--font-heading);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .tab-btn.active {
+            background: var(--gradient-primary);
+            color: #ffffff;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.35);
+        }
+
+        /* Explanation Box */
+        .explanation-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 24px;
+            padding: 1.6rem 1.6rem;
+            backdrop-filter: blur(16px);
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .exp-question-title {
+            font-family: var(--font-heading);
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1.4;
+        }
+
+        .answer-status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 700;
+        }
+
+        .answer-status-pill.correct {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #34d399;
+        }
+
+        .answer-status-pill.incorrect {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #f87171;
+        }
+
+        .exp-text-block {
+            background: rgba(255, 255, 255, 0.04);
+            border-left: 4px solid var(--color-purple);
+            padding: 1.2rem 1.2rem;
+            border-radius: 0 16px 16px 0;
+            font-size: 1.02rem;
+            line-height: 1.55;
+            color: var(--color-text-muted);
+        }
+
+        .completion-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .secondary-btn {
+            flex: 1;
+            padding: 1.1rem 1.5rem;
+            font-family: var(--font-heading);
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .secondary-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .primary-btn {
+            flex: 1;
+            padding: 1.1rem 1.5rem;
+            font-family: var(--font-heading);
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #ffffff;
+            background: var(--gradient-btn);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(236, 72, 153, 0.35);
+            text-align: center;
+        }
+
+        .primary-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(236, 72, 153, 0.5);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- BACKGROUND STAGE -->
+    <div class="bg-fallback"></div>
+    <div class="stage-bg"></div>
+    <div class="ambient-glow-top"></div>
+    <div class="ambient-glow-bottom"></div>
+
+    <!-- MAIN KIOSK CONTAINER -->
+    <div id="kiosk-app">
+        <!-- SCREEN STAGE -->
+        <main class="screen-stage">
+
+            <!-- SCREEN 1: WELCOME / START -->
+            <section id="screen-welcome" class="screen active">
+                <div class="logo-wrapper">
+                    <div class="logo-glow"></div>
+                    <img src="../assets/africa_logo.png" alt="Africa Rare Diseases Summit Logo" class="app-logo"
+                        onerror="this.src='assets/africa_logo.png'">
+                </div>
+
+                <div class="welcome-content">
+                    <h1 class="hero-title">Rare Recognition Quiz</h1>
+                    <p class="hero-subtitle">What are clinicians in your</p>
+                    <p class="hero-subtitle">what is available to them</p>
+                </div>
+                <button id="btn-begin" class="begin-btn">
+                    Begin the quiz challenge
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
+            </section>
+
+            <!-- SCREEN 2: SPECIALTY CATEGORIES -->
+            <section id="screen-categories" class="screen">
+                <div class="screen-navbar">
+                    <div class="nav-logo-wrap">
+                        <img src="../assets/africa_logo.png" alt="Africa Logo" class="nav-logo" onerror="this.src='assets/africa_logo.png'">
+                    </div>
+                    <div class="nav-title-wrap">
+                        <h2 class="nav-title">Select Your Specialty</h2>
+                        <p class="nav-subtitle">Choose your medical field to start your 2-question challenge</p>
+                    </div>
+                </div>
+
+                <div id="categories-grid" class="categories-grid">
+                    <!-- Dynamic rendering via JS -->
+                </div>
+            </section>
+
+            <!-- SCREEN 3: QUESTION VIEW -->
+            <section id="screen-question" class="screen">
+                <div>
+                    <div class="quiz-top-bar">
+                        <div style="display: flex; align-items: center; gap: 0.9rem;">
+                            <img src="../assets/africa_logo.png" alt="Africa Logo" style="height: 45px; width: auto; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));" onerror="this.src='assets/africa_logo.png'">
+                            <div id="quiz-specialty-badge" class="specialty-tag">PEDIATRICS</div>
+                        </div>
+                        <div id="quiz-progress-text" class="question-counter">Question 1 of 2</div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div id="quiz-progress-fill" class="progress-bar-fill"></div>
+                    </div>
+
+                    <div class="question-card">
+                        <p id="question-text" class="question-text">Loading clinical scenario...</p>
+                    </div>
+                </div>
+
+                <div id="options-container" class="options-container">
+                    <!-- Dynamic rendering of 4 options -->
+                </div>
+
+                <div class="action-footer">
+                    <button id="btn-submit-answer" class="next-btn">
+                        Submit Answer
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </button>
+                </div>
+            </section>
+
+            <!-- SCREEN 4: COMPLETION & EXPLANATIONS -->
+            <section id="screen-completion" class="screen">
+                <div class="score-card">
+                    <div class="trophy-badge">
+                        <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                            <path d="M4 22h16"></path>
+                            <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                            <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                            <path d="M18 2H6v7a6 6 0 0 0 12 0V2z"></path>
+                        </svg>
+                    </div>
+                    <h2 class="score-title">Challenge Completed!</h2>
+                    <div id="score-badge" class="score-value-badge">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                        Score: 2 / 2 Correct
+                    </div>
+                </div>
+
+                <!-- Explanation Tabs -->
+                <div class="explanation-tabs">
+                    <button id="tab-q1" class="tab-btn active" onclick="switchExplanationTab(0)">
+                        Question 1 Review
+                    </button>
+                    <button id="tab-q2" class="tab-btn" onclick="switchExplanationTab(1)">
+                        Question 2 Review
+                    </button>
+                </div>
+
+                <!-- Detailed Explanation Display Container -->
+                <div id="explanation-content-card" class="explanation-card">
+                    <!-- Rendered by JS -->
+                </div>
+
+                <div class="completion-actions">
+                    <button id="btn-other-specialty" class="secondary-btn">Try Another Specialty</button>
+                    <button id="btn-restart" class="primary-btn">Restart Challenge</button>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- QUIZ ENGINE SCRIPT -->
+        <script>
+            /* --- CLINICAL QUIZ DATASET (6 SPECIALTIES, 2 QUESTIONS EACH) --- */
+            const QUIZ_DATA = [
+                {
+                    id: 'pediatrics',
+                    title: 'Pediatrics',
+                    desc: 'Childhood metabolic & genetic rare conditions',
+                    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a5 5 0 0 1 5 5v3a5 5 0 0 1-10 0V7a5 5 0 0 1 5-5z"></path><path d="M19 14v1a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4v-1"></path><circle cx="9" cy="8" r="1"></circle><circle cx="15" cy="8" r="1"></circle></svg>`,
+                    questions: [
+                        {
+                            question: "A 4-year-old child presents with progressive splenomegaly, bone pain, fatigue, and severe thrombocytopenia. Bone marrow aspirate shows glycolipid-laden macrophages with a 'wrinkled tissue paper' appearance. What is the most likely diagnosis?",
+                            options: [
+                                "Gaucher Disease Type 1",
+                                "Acute Lymphoblastic Leukemia",
+                                "Niemann-Pick Disease Type C",
+                                "Idiopathic Thrombocytopenic Purpura"
+                            ],
+                            correctIndex: 0,
+                            explanation: "Gaucher disease is an autosomal recessive lysosomal storage disorder caused by glucocerebrosidase (GBA) enzyme deficiency. Accumulation of glucocerebroside produces pathognomonic lipid-laden macrophages ('Gaucher cells'). Early Enzyme Replacement Therapy (ERT) reverses organomegaly and prevents irreversible skeletal complications."
+                        },
+                        {
+                            question: "A 3-month-old infant displays severe symmetrical proximal muscle weakness, bell-shaped chest, tongue fasciculations, and absence of deep tendon reflexes while cognitive awareness is completely preserved. Which gene mutation is responsible?",
+                            options: [
+                                "SMN1 gene homozygous deletion or mutation",
+                                "DMD gene exon deletion",
+                                "GAA gene acid alpha-glucosidase deficiency",
+                                "PMP22 gene duplication"
+                            ],
+                            correctIndex: 0,
+                            explanation: "Spinal Muscular Atrophy (SMA Type 1 / Werdnig-Hoffmann disease) is caused by loss-of-function mutations in the SMN1 gene leading to motor neuron degeneration. Early administration of SMN2 splicing modifiers or SMN1 gene replacement therapy dramatically improves motor function when initiated before irreversible neuronal loss."
+                        }
+                    ]
+                },
+                {
+                    id: 'dental',
+                    title: 'Dental & Oral',
+                    desc: 'Craniofacial & oral rare manifestations',
+                    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 2 5 5 5 9c0 3.5 1.5 6 3 8.5C9.5 20 10.5 22 12 22s2.5-2 4-4.5c1.5-2.5 3-5 3-8.5 0-4-3-7-7-7z"></path></svg>`,
+                    questions: [
+                        {
+                            question: "A 5-year-old child experiences premature spontaneous loss of primary teeth before age 2 with completely intact roots, accompanied by low serum alkaline phosphatase (ALP). Which metabolic bone disorder should be suspected?",
+                            options: [
+                                "Hypophosphatasia (HPP)",
+                                "Amelogenesis Imperfecta",
+                                "Cleidocranial Dysplasia",
+                                "Dentinogenesis Imperfecta"
+                            ],
+                            correctIndex: 0,
+                            explanation: "Hypophosphatasia (HPP) is caused by mutations in the ALPL gene encoding tissue-nonspecific alkaline phosphatase. Loss of cementum results in premature loss of primary teeth with intact roots. Low serum ALP is a key diagnostic marker, and treatment with recombinant enzyme replacement (asfotase alfa) restores bone/dental mineralization."
+                        },
+                        {
+                            question: "A patient presents with multiple supernumerary teeth, delayed eruption of permanent teeth, hypermobility of shoulders due to aplastic clavicles, and open cranial sutures. Which genetic syndrome accounts for this triad?",
+                            options: [
+                                "Cleidocranial Dysplasia (RUNX2 mutation)",
+                                "Gardner Syndrome",
+                                "Gorlin-Goltz Syndrome",
+                                "Osteogenesis Imperfecta Type I"
+                            ],
+                            correctIndex: 0,
+                            explanation: "Cleidocranial Dysplasia (CCD) is an autosomal dominant skeletal disorder caused by RUNX2 gene mutations. Key dental findings include impacted permanent teeth, multiple supernumerary teeth, and palate anomalies alongside clavicular hypoplasia."
+                        }
+                    ]
+                },
+                {
+                    id: 'cardiology',
+                    title: 'Cardiology',
+                    desc: 'Rare cardiovascular & infiltrative diseases',
+                    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.84-8.84 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`,
+                    questions: [
+                        {
+                            question: "A 35-year-old male presents with unexplained left ventricular hypertrophy (LVH), severe neuropathic acroparesthesias in hands and feet, hypohidrosis, and angiokeratomas. What lysosomal disorder is responsible?",
+                            options: [
+                                "Fabry Disease (GLA deficiency)",
+                                "Transthyretin Cardiac Amyloidosis",
+                                "Pompe Disease (GAA deficiency)",
+                                "Danon Disease (LAMP2 mutation)"
+                            ],
+                            correctIndex: 0,
+                            explanation: "Fabry Disease is an X-linked lysosomal storage disorder caused by alpha-galactosidase A (GLA) deficiency. Globotriaosylceramide (Gb3) accumulation in endothelial cells and myocytes leads to progressive concentric LVH, heart failure, and renal decline. Specific enzyme replacement or chaperone therapies arrest disease progression."
+                        },
+                        {
+                            question: "An 68-year-old patient with a history of bilateral carpal tunnel syndrome presents with heart failure with preserved ejection fraction (HFpEF). Which diagnostic test non-invasively confirms Transthyretin Cardiac Amyloidosis (ATTR-CM)?",
+                            options: [
+                                "99mTc-PYP / DPD Bone Scintigraphy Scan",
+                                "Serum protein electrophoresis alone",
+                                "Exercise treadmill stress test",
+                                "Coronary Angiography"
+                            ],
+                            correctIndex: 0,
+                            explanation: "Transthyretin Cardiac Amyloidosis (ATTR-CM) often presents with HFpEF preceded by orthopedic signs like carpal tunnel syndrome. Technetium-99m pyrophosphate (99mTc-PYP) scintigraphy non-invasively confirms ATTR cardiac amyloid deposition with high specificity without requiring invasive endomyocardial biopsy."
+                        }
+                    ]
+                },
+                {
+                    id: 'neurology',
+                    title: 'Neurology',
+                    desc: 'Neurodegenerative & neuromuscular disorders',
+                    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a7 7 0 0 0-7 7c0 2.38 1.19 4.47 3 5.74V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.26c1.81-1.27 3-3.36 3-5.74a7 7 0 0 0-7-7z"></path><path d="M9 21h6"></path></svg>`,
+                    questions: [
+                        {
+                            question: "A 42-year-old adult presents with progressive proximal lower limb weakness, exertional dyspnea, morning headaches, and elevated serum creatine kinase. What metabolic myopathy should be evaluated?",
+                            options: [
+                                "Late-Onset Pompe Disease (GAA deficiency)",
+                                "Myasthenia Gravis",
+                                "Limb-Girdle Muscular Dystrophy 2A",
+                                "Amyotrophic Lateral Sclerosis"
+                            ],
+                            correctIndex: 0,
+                            explanation: "Late-Onset Pompe Disease (LOPD) is caused by acid alpha-glucosidase (GAA) deficiency. Diaphragmatic weakness causing nocturnal hypoventilation combined with limb-girdle weakness is characteristic. Enzyme Replacement Therapy (ERT) halts muscle degeneration."
+                        },
+                        {
+                            question: "A patient presents with choreiform movements, progressive executive dysfunction, and caudate nucleus atrophy on MRI. What genetic defect confirms Huntington's Disease?",
+                            options: [
+                                "HTT gene CAG trinucleotide repeat expansion",
+                                "FXN gene GAA repeat expansion",
+                                "C9orf72 hexanucleotide expansion",
+                                "ATXN1 gene CAG expansion"
+                            ],
+                            correctIndex: 0,
+                            explanation: "Huntington's Disease is caused by an expanded CAG trinucleotide repeat in the HTT gene on chromosome 4. Degeneration of striatal medium spiny neurons causes chorea, executive dysfunction, and psychiatric disturbances."
+                        }
+                    ]
+                },
+                {
+                    id: 'genetics',
+                    title: 'Genetics',
+                    desc: 'Inborn errors of metabolism & storage diseases',
+                    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 15c6.667-6 13.333 0 20-6"></path><path d="M2 9c6.667 6 13.333 0 20 6"></path><circle cx="6" cy="12" r="1.5"></circle><circle cx="18" cy="12" r="1.5"></circle></svg>`,
+                    questions: [
+                        {
+                            question: "An 18-month-old child presents with coarse facial features, hepatosplenomegaly, corneal clouding, and joint stiffness. Urinary GAGs show elevated dermatan and heparan sulfate. What enzyme is deficient?",
+                            options: [
+                                "Alpha-L-iduronidase (MPS I / Hurler Syndrome)",
+                                "Iduronate-2-sulfatase (MPS II / Hunter)",
+                                "Beta-galactosidase (GM1 Gangliosidosis)",
+                                "Sphingomyelinase (Niemann-Pick A)"
+                            ],
+                            correctIndex: 0,
+                            explanation: "Mucopolysaccharidosis Type I (MPS I) is caused by alpha-L-iduronidase deficiency. Deposition of glycosaminoglycans produces dysostosis multiplex, coarse facial features, corneal opacity, and organomegaly. Early hematopoietic stem cell transplant or ERT prevents neurocognitive decline."
+                        },
+                        {
+                            question: "What is the key clinical advantage of early newborn screening for rare metabolic disorders such as Phenylketonuria (PKU)?",
+                            options: [
+                                "Enables presymptomatic intervention to prevent irreversible organ/brain damage",
+                                "Eliminates the requirement for lifetime dietary or medical management",
+                                "Identifies maternal carrier status exclusively without child testing",
+                                "Provides immediate gene therapy curing the condition permanently"
+                            ],
+                            correctIndex: 0,
+                            explanation: "Newborn screening allows presymptomatic detection of rare metabolic disorders. In PKU, early dietary restriction of phenylalanine initiated immediately after birth prevents severe, irreversible intellectual disability."
+                        }
+                    ]
+                },
+                {
+                    id: 'internal',
+                    title: 'Internal Med',
+                    desc: 'Multisystemic & auto-inflammatory rare diseases',
+                    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>`,
+                    questions: [
+                        {
+                            question: "A 28-year-old female presents with recurrent episodes of severe non-pruritic swelling in the face and extremities with painful abdominal attacks. Antihistamines provide no relief. Serum C4 is low. What condition is present?",
+                            options: [
+                                "Hereditary Angioedema (C1-INH deficiency)",
+                                "Dietary Anaphylaxis",
+                                "Idiopathic Autoimmune Urticaria",
+                                "Systemic Lupus Erythematosus"
+                            ],
+                            correctIndex: 0,
+                            explanation: "Hereditary Angioedema (HAE) results from C1-inhibitor deficiency or dysfunction, causing unchecked bradykinin generation. HAE attacks do not respond to allergy treatments (epinephrine, steroids, antihistamines) and require C1-INH concentrates or bradykinin B2 receptor antagonists."
+                        },
+                        {
+                            question: "A 40-year-old non-smoker presents with progressive panacinar emphysema and unexplained liver transaminitis. Serum electrophoresis shows a reduced alpha-1 globulin peak. What is the diagnosis?",
+                            options: [
+                                "Alpha-1 Antitrypsin Deficiency (SERPINA1 mutation)",
+                                "Cystic Fibrosis (CFTR mutation)",
+                                "Hereditary Hemochromatosis",
+                                "Wilson Disease (ATP7B mutation)"
+                            ],
+                            correctIndex: 0,
+                            explanation: "Alpha-1 Antitrypsin Deficiency (AATD) is caused by SERPINA1 mutations. Polymerization of misfolded AAT in hepatocytes causes liver disease, while severe serum deficiency permits uninhibited neutrophil elastase activity leading to early-onset panacinar emphysema."
+                        }
+                    ]
+                }
+            ];
+
+            /* --- STATE MANAGEMENT --- */
+            let currentScreen = 'screen-welcome';
+            let selectedSpecialty = null;
+            let currentQuestionIndex = 0;
+            let userAnswers = []; // stores selected option indices for Q1 and Q2
+            let currentExplanationTab = 0;
+
+            /* --- AUDIO REMOVED --- */
+            function playSound(type) {
+                // Audio disabled
+            }
+
+            /* --- SCREEN SWITCHING UTILITY --- */
+            function showScreen(screenId) {
+                document.querySelectorAll('.screen').forEach(scr => {
+                    scr.classList.remove('active');
+                });
+                const target = document.getElementById(screenId);
+                if (target) {
+                    target.classList.add('active');
+                    currentScreen = screenId;
+                }
+            }
+
+            /* --- INITIALIZATION & EVENT BINDINGS --- */
+            document.addEventListener('DOMContentLoaded', () => {
+                renderCategoryCards();
+
+                // Begin Button
+                document.getElementById('btn-begin').addEventListener('click', () => {
+                    playSound('click');
+                    showScreen('screen-categories');
+                });
+
+                // Submit Answer Button
+                document.getElementById('btn-submit-answer').addEventListener('click', () => {
+                    handleAnswerSubmission();
+                });
+
+                // Completion Navigation Buttons
+                document.getElementById('btn-other-specialty').addEventListener('click', () => {
+                    playSound('click');
+                    showScreen('screen-categories');
+                });
+
+                document.getElementById('btn-restart').addEventListener('click', () => {
+                    playSound('click');
+                    showScreen('screen-welcome');
+                });
+            });
+
+            /* --- RENDER SPECIALTY CARDS --- */
+            function renderCategoryCards() {
+                const grid = document.getElementById('categories-grid');
+                grid.innerHTML = '';
+
+                QUIZ_DATA.forEach(cat => {
+                    const card = document.createElement('div');
+                    card.className = 'category-card';
+                    card.onclick = () => selectSpecialty(cat.id);
+
+                    card.innerHTML = `
+                    <div class="card-inner">
+                        <div class="card-icon-wrap">
+                            ${cat.icon}
+                        </div>
+                        <div class="card-info">
+                            <h3 class="card-title">${cat.title}</h3>
+                            <p class="card-desc">${cat.desc}</p>
+                        </div>
+                        <div class="card-footer-badge">
+                            2 Questions
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                <polyline points="12 5 19 12 12 19"></polyline>
+                            </svg>
+                        </div>
+                    </div>
+                `;
+                    grid.appendChild(card);
+                });
+            }
+
+            /* --- SELECT SPECIALTY & START QUIZ --- */
+            function selectSpecialty(specialtyId) {
+                playSound('select');
+                selectedSpecialty = QUIZ_DATA.find(s => s.id === specialtyId);
+                currentQuestionIndex = 0;
+                userAnswers = [];
+
+                document.getElementById('quiz-specialty-badge').innerText = selectedSpecialty.title.toUpperCase();
+                loadQuestion(0);
+                showScreen('screen-question');
+            }
+
+            /* --- LOAD QUESTION --- */
+            function loadQuestion(index) {
+                currentQuestionIndex = index;
+                const qData = selectedSpecialty.questions[index];
+
+                // Progress Header
+                document.getElementById('quiz-progress-text').innerText = `Question ${index + 1} of 2`;
+                const fillPct = ((index + 1) / 2) * 100;
+                document.getElementById('quiz-progress-fill').style.width = `${fillPct}%`;
+
+                // Question Text
+                document.getElementById('question-text').innerText = qData.question;
+
+                // Render Options
+                const optionsContainer = document.getElementById('options-container');
+                optionsContainer.innerHTML = '';
+
+                const letters = ['A', 'B', 'C', 'D'];
+                qData.options.forEach((optText, optIdx) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option-btn';
+                    btn.onclick = () => selectOption(optIdx);
+
+                    btn.innerHTML = `
+                    <div class="option-letter">${letters[optIdx]}</div>
+                    <div class="option-text">${optText}</div>
+                `;
+                    optionsContainer.appendChild(btn);
+                });
+
+                // Reset Next/Submit button state
+                const submitBtn = document.getElementById('btn-submit-answer');
+                submitBtn.classList.remove('active');
+                submitBtn.innerHTML = `
+                ${index === 1 ? 'Finish Challenge' : 'Submit Answer'}
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+            `;
+            }
+
+            /* --- SELECT OPTION --- */
+            function selectOption(optionIndex) {
+                playSound('select');
+                const options = document.querySelectorAll('.option-btn');
+                options.forEach((btn, idx) => {
+                    if (idx === optionIndex) {
+                        btn.classList.add('selected');
+                    } else {
+                        btn.classList.remove('selected');
+                    }
+                });
+
+                userAnswers[currentQuestionIndex] = optionIndex;
+                document.getElementById('btn-submit-answer').classList.add('active');
+            }
+
+            /* --- HANDLE SUBMISSION --- */
+            function handleAnswerSubmission() {
+                if (userAnswers[currentQuestionIndex] === undefined) return;
+
+                playSound('click');
+                if (currentQuestionIndex < 1) {
+                    loadQuestion(1);
+                } else {
+                    renderCompletionScreen();
+                    showScreen('screen-completion');
+                }
+            }
+
+            /* --- COMPLETION & EXPLANATIONS SCREEN --- */
+            function renderCompletionScreen() {
+                playSound('complete');
+                let correctCount = 0;
+                selectedSpecialty.questions.forEach((q, idx) => {
+                    if (userAnswers[idx] === q.correctIndex) {
+                        correctCount++;
+                    }
+                });
+
+                // Score Banner
+                document.getElementById('score-badge').innerHTML = `
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+                Score: ${correctCount} / 2 Correct (${correctCount === 2 ? '100% Perfect!' : correctCount === 1 ? '50% Good Effort' : 'Review Explanations'})
+            `;
+
+                switchExplanationTab(0);
+            }
+
+            /* --- EXPLANATION TAB SWITCHING --- */
+            function switchExplanationTab(tabIdx) {
+                playSound('click');
+                currentExplanationTab = tabIdx;
+
+                document.getElementById('tab-q1').classList.toggle('active', tabIdx === 0);
+                document.getElementById('tab-q2').classList.toggle('active', tabIdx === 1);
+
+                const qData = selectedSpecialty.questions[tabIdx];
+                const userChoiceIdx = userAnswers[tabIdx];
+                const isCorrect = userChoiceIdx === qData.correctIndex;
+                const letters = ['A', 'B', 'C', 'D'];
+
+                const expCard = document.getElementById('explanation-content-card');
+                expCard.innerHTML = `
+                <div class="exp-question-title">
+                    Question ${tabIdx + 1}: ${qData.question}
+                </div>
+
+                <div>
+                    <div class="answer-status-pill ${isCorrect ? 'correct' : 'incorrect'}">
+                        ${isCorrect ?
+                        `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg> Correct! You chose (${letters[userChoiceIdx]}) ${qData.options[userChoiceIdx]}` :
+                        `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Incorrect: You selected (${letters[userChoiceIdx]}) ${qData.options[userChoiceIdx]}`
+                    }
+                    </div>
+                </div>
+
+                ${!isCorrect ? `
+                    <div style="font-size: 0.95rem; font-weight: 700; color: #34d399; display: flex; align-items: center; gap: 0.5rem;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Correct Answer: (${letters[qData.correctIndex]}) ${qData.options[qData.correctIndex]}
+                    </div>
+                ` : ''}
+
+                <div class="exp-text-block">
+                    <strong style="color: #ffffff; display: block; margin-bottom: 0.4rem;">Clinical Rationale:</strong>
+                    ${qData.explanation}
+                </div>
+            `;
+            }
+        </script>
+</body>
+
+</html>

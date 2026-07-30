@@ -1,0 +1,86 @@
+Here is the complete component list and a structured wiring diagram for your entire project.
+
+
+
+\### Component List
+
+
+
+\* \*\*1x Arduino Nano:\*\* The main controller.
+
+\* \*\*1x 5V Power Supply (PSU):\*\* To power the 5V LEDs, Arduino, and Relay. (Must be rated for at least \*\*40 Amps / 200W\*\* to safely handle 600 LEDs). **650EGP**
+
+\* \*\*2x 10-Meter WS2811 5V LED Strips:\*\* Totaling 600 LEDs.  **2\*850EGP**
+
+\* \*\*1x 220V LED Strip:\*\* The secondary light source.
+
+\* \*\*1x 4-Channel 5V Relay Module:\*\* To safely switch the 220V power. **160EGP**
+
+\* \*\*2x Push Buttons:\*\* Momentary switches for triggering the sequence. **20EGP**
+
+\* \*\*1x 330-Ohm Resistor:\*\* To protect the Arduino data pin (highly recommended).
+
+\* \*\*2x 220V Wall Plugs:\*\* One to power the 5V PSU, one to supply the 220V LED strip.
+
+\* \*\*Wiring:\*\* Thick gauge wire for the 5V power injection, standard jumper wires for data and buttons.
+
+
+
+\---
+
+
+
+\### Wiring Diagram
+
+
+
+\*\*1. Power Distribution (Low Voltage)\*\*
+
+
+
+| Component | Terminal / Pin | Connects To |
+
+| --- | --- | --- |
+
+| \*\*5V PSU\*\* | V+ (Positive) | Arduino Nano `5V`, Relay `VCC`, WS2811 `5V` |
+
+| \*\*5V PSU\*\* | V- (Ground) | Arduino Nano `GND`, Relay `GND`, WS2811 `GND`, Button 1 \& 2 `GND` |
+
+
+
+\*Note: Because you have 20 meters of 5V LEDs, you must run extra wires from the PSU V+ and V- directly to the middle and end of the LED strips. If you only power them from the very beginning, the end of the strip will turn yellow and dim due to voltage drop.\*
+
+
+
+\*\*2. Arduino Data \& Signals\*\*
+
+
+
+| Component | Terminal / Pin | Connects To |
+
+| --- | --- | --- |
+
+| \*\*WS2811 Strip\*\* | DIN (Data In) | Arduino Nano `D6` (Place the 330-ohm resistor inline here) |
+
+| \*\*Relay Module\*\* | IN1 (Signal) | Arduino Nano `D4` |
+
+| \*\*Button 1\*\* | Leg 1 | Arduino Nano `D2` |
+
+| \*\*Button 2\*\* | Leg 1 | Arduino Nano `D3` |
+
+
+
+\*\*3. High Voltage (220V AC)\*\*
+
+
+
+| Component | Terminal / Wire | Connects To |
+
+| --- | --- | --- |
+
+| \*\*220V Wall Plug\*\* | Neutral Wire | 220V LED Strip `Neutral Wire` (Direct connection) |
+
+| \*\*220V Wall Plug\*\* | Live Wire | Relay Module `COM` (Middle screw on Channel 1) |
+
+| \*\*220V LED Strip\*\* | Live Wire | Relay Module `NO` (Normally Open screw on Channel 1) |
+

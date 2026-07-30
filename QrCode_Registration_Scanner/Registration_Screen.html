@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Africa Rare Diseases Summit - Registration Screen</title>
+    <!-- Google Font Fallback (Poppins / Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap"
+        rel="stylesheet">
+    <style>
+        /* --- SANOFI BRAND FONT DECLARATION --- */
+        @font-face {
+            font-family: 'Sanofi';
+            src: local('Sanofi'), local('Sanofi Sans'), local('Sanofi-Regular');
+            font-weight: 400;
+        }
+
+        @font-face {
+            font-family: 'Sanofi';
+            src: local('Sanofi Bold'), local('Sanofi-Bold');
+            font-weight: 700;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #0b021a;
+            font-family: 'Sanofi', 'Sanofi Sans', 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: #ffffff;
+            position: relative;
+        }
+
+        /* --- STAGE BACKGROUND WITH GRADIENT --- */
+        .stage-bg {
+            position: absolute;
+            inset: 0;
+            background: url('../assets/bg.png') no-repeat center center;
+            background-size: cover;
+            z-index: 1;
+        }
+
+        .gradient-vignette {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, rgba(11, 2, 26, 0.1) 0%, rgba(11, 2, 26, 0.75) 100%);
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        /* --- MAIN SCREEN CONTAINER --- */
+        .screen-container {
+            position: relative;
+            z-index: 10;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            text-align: center;
+        }
+
+        /* --- TOP HEADER LOGO & BRANDING --- */
+        .header-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 4vh;
+            transition: all 0.6s ease;
+        }
+
+        .header-logo img {
+            height: 200px;
+            width: auto;
+            filter: drop-shadow(0 4px 20px rgba(156, 39, 176, 0.5));
+        }
+
+        /* --- PLAIN IDLE STATE (Empty / Plain when waiting) --- */
+        .idle-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 1;
+            transform: scale(1);
+            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            min-height: 50px;
+        }
+
+        .idle-card.hidden {
+            opacity: 0;
+            transform: scale(0.95);
+            pointer-events: none;
+            position: absolute;
+        }
+
+        /* --- SCANNED WELCOME CARD (MATCHING STAGE IMAGE) --- */
+        .welcome-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: translateY(20px) scale(0.96);
+            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+        }
+
+        .welcome-card.active {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+
+        /* Line 1: Welcome to The */
+        .welcome-prefix {
+            font-size: clamp(26px, 3.5vw, 52px);
+            font-weight: 400;
+            color: #ffffff;
+            margin-bottom: 8px;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.7);
+            letter-spacing: -0.5px;
+        }
+
+        /* Line 2: Africa Rare Diseases Summit */
+        .welcome-summit-title {
+            font-size: clamp(36px, 5.5vw, 82px);
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 28px;
+            text-shadow: 0 6px 30px rgba(0, 0, 0, 0.85);
+            letter-spacing: -1px;
+            line-height: 1.1;
+        }
+
+        /* Line 3: Member Name */
+        .member-name {
+            font-size: clamp(30px, 4vw, 60px);
+            font-weight: 500;
+            color: #ffffff;
+            margin-bottom: 22px;
+            text-shadow: 0 4px 25px rgba(0, 0, 0, 0.8);
+            letter-spacing: -0.2px;
+        }
+
+        /* Line 4: Flag & Country */
+        .country-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 10px;
+        }
+
+        .country-flag {
+            width: clamp(50px, 5.5vw, 85px);
+            height: clamp(32px, 3.6vw, 55px);
+            object-fit: cover;
+            border-radius: 4px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.2);
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .country-flag-emoji {
+            font-size: clamp(38px, 4.8vw, 70px);
+            line-height: 1;
+            filter: drop-shadow(0 4px 15px rgba(0, 0, 0, 0.6));
+        }
+
+        .country-name {
+            font-size: clamp(26px, 3.5vw, 50px);
+            font-weight: 500;
+            color: #ffffff;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Background Stage layers -->
+    <div class="stage-bg"></div>
+    <div class="gradient-vignette"></div>
+
+    <div class="screen-container">
+
+        <!-- Header Branding (Clean 200px Summit Logo) -->
+        <div class="header-logo">
+            <img src="../assets/logo.png" alt="Africa Rare Diseases Summit Logo" id="logo-img">
+        </div>
+
+        <!-- PLAIN / IDLE STATE (Clean plain screen when waiting for scan) -->
+        <div class="idle-card" id="idle-card">
+            <!-- Plain state: displays logo & stage background -->
+        </div>
+
+        <!-- WELCOME SCANNED MEMBER STATE (Displays on QR code scan) -->
+        <div class="welcome-card" id="welcome-card">
+            <div class="welcome-prefix">Welcome to The</div>
+            <div class="welcome-summit-title">Africa Rare Diseases Summit</div>
+            <div class="member-name" id="member-name">Dr. Amina Khaled</div>
+            <div class="country-container" id="country-container">
+                <img id="country-flag-img" class="country-flag" src="" alt="Country Flag" style="display: none;">
+                <span id="country-flag-emoji" class="country-flag-emoji" style="display: none;"></span>
+                <span class="country-name" id="country-name">Egypt</span>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const idleCard = document.getElementById('idle-card');
+        const welcomeCard = document.getElementById('welcome-card');
+        const memberNameEl = document.getElementById('member-name');
+        const countryNameEl = document.getElementById('country-name');
+        const countryFlagImg = document.getElementById('country-flag-img');
+        const countryFlagEmoji = document.getElementById('country-flag-emoji');
+        const countryContainer = document.getElementById('country-container');
+
+        let hideTimeout;
+
+        // Country name to ISO-2 mapping table
+        const countryMap = {
+            "egypt": "eg", "saudi arabia": "sa", "uae": "ae", "united arab emirates": "ae",
+            "south africa": "za", "kenya": "ke", "nigeria": "ng", "ghana": "gh",
+            "rwanda": "rw", "morocco": "ma", "algeria": "dz", "tunisia": "tn",
+            "ethiopia": "et", "uganda": "ug", "tanzania": "tz", "senegal": "sn",
+            "ivory coast": "ci", "coted'ivoire": "ci", "cameroon": "cm", "zambia": "zm", "zimbabwe": "zw",
+            "france": "fr", "united kingdom": "gb", "uk": "gb", "usa": "us",
+            "united states": "us", "germany": "de", "italy": "it", "spain": "es", "switzerland": "ch"
+        };
+
+        // Country ISO code to Emoji Flag converter fallback
+        function getEmojiFlag(isoCode) {
+            if (!isoCode || isoCode.length !== 2) return '';
+            const codePoints = isoCode
+                .toUpperCase()
+                .split('')
+                .map(char => 127397 + char.charCodeAt(0));
+            return String.fromCodePoint(...codePoints);
+        }
+
+        // Universal Payload Parser (prioritizes URL key-value params format: name=...&country=...)
+        function parsePayload(payload) {
+            let name = "";
+            let country = "";
+            let code = "";
+
+            if (typeof payload === 'object' && payload !== null) {
+                name = payload.name || payload.memberName || "";
+                country = payload.country || payload.memberCountry || "";
+                code = payload.code || payload.countryCode || "";
+                if (name) return { name, country, code };
+            }
+
+            if (typeof payload === 'string') {
+                const trimmed = payload.trim();
+
+                // 1. URL key-value params (e.g. name=Dr.+Amina+Khaled&country=Egypt or https://.../?name=...&country=...)
+                if (trimmed.includes('name=') || trimmed.includes('country=') || trimmed.includes('&') || trimmed.includes('?')) {
+                    try {
+                        let q = trimmed;
+                        if (q.includes('?')) q = q.split('?')[1];
+                        const params = new URLSearchParams(q);
+                        name = params.get('name') || params.get('memberName') || params.get('guestName') || "";
+                        country = params.get('country') || params.get('memberCountry') || "";
+                        code = params.get('code') || params.get('countryCode') || "";
+                        if (name) return { name, country, code };
+                    } catch (e) { }
+                }
+
+                // 2. Try JSON
+                try {
+                    const parsed = JSON.parse(trimmed);
+                    name = parsed.name || parsed.memberName || "";
+                    country = parsed.country || "";
+                    code = parsed.code || parsed.countryCode || "";
+                    if (name) return { name, country, code };
+                } catch (e) { }
+
+                // 3. Delimited formats (Pipe or Comma)
+                if (trimmed.includes('|')) {
+                    const parts = trimmed.split('|');
+                    name = parts[0].trim();
+                    country = parts[1].trim();
+                    return { name, country, code };
+                } else if (trimmed.includes(',')) {
+                    const parts = trimmed.split(',');
+                    name = parts[0].trim();
+                    country = parts[1].trim();
+                    return { name, country, code };
+                }
+
+                // 4. Plain name string
+                name = trimmed;
+            }
+
+            return { name, country, code };
+        }
+
+        // Listen for scanner updates via BroadcastChannel
+        const channelName = 'africa_summit_registration';
+        const bc = window.BroadcastChannel ? new BroadcastChannel(channelName) : null;
+
+        if (bc) {
+            bc.onmessage = (event) => {
+                if (event.data) {
+                    handleScanPayload(event.data);
+                }
+            };
+        }
+
+        // Listen for legacy channel as fallback
+        if (window.BroadcastChannel) {
+            const legacyBc = new BroadcastChannel('talabat_registration');
+            legacyBc.onmessage = (event) => {
+                if (event.data) {
+                    handleScanPayload(event.data);
+                }
+            };
+        }
+
+        // Listen for storage events (across tabs/windows)
+        window.addEventListener('storage', (event) => {
+            if (event.key === 'latestGuest') {
+                try {
+                    const data = JSON.parse(event.newValue);
+                    if (data) {
+                        handleScanPayload(data);
+                    }
+                } catch (e) { }
+            }
+        });
+
+        function handleScanPayload(payload) {
+            const parsed = parsePayload(payload);
+            if (parsed.name) {
+                showWelcome(parsed.name, parsed.country, parsed.code);
+            }
+        }
+
+        function showWelcome(name, country, code) {
+            clearTimeout(hideTimeout);
+
+            // Update Member Name
+            memberNameEl.innerText = name;
+
+            // Handle Country & Flag
+            if (country || code) {
+                countryContainer.style.display = 'flex';
+                countryNameEl.innerText = country || (code ? code.toUpperCase() : "");
+
+                let isoCode = (code || '').toLowerCase();
+                if (!isoCode && country) {
+                    isoCode = countryMap[country.toLowerCase().trim()] || '';
+                }
+
+                if (isoCode) {
+                    // Load flag image from flagcdn
+                    const flagUrl = `https://flagcdn.com/w160/${isoCode}.png`;
+                    countryFlagImg.src = flagUrl;
+                    countryFlagImg.style.display = 'block';
+                    countryFlagEmoji.style.display = 'none';
+
+                    // Fallback to emoji if image fails to load
+                    countryFlagImg.onerror = () => {
+                        countryFlagImg.style.display = 'none';
+                        countryFlagEmoji.innerText = getEmojiFlag(isoCode);
+                        countryFlagEmoji.style.display = 'inline-block';
+                    };
+                } else {
+                    countryFlagImg.style.display = 'none';
+                    countryFlagEmoji.style.display = 'none';
+                }
+            } else {
+                countryContainer.style.display = 'none';
+            }
+
+            // Transition from Plain Idle -> Scanned Welcome State
+            idleCard.classList.add('hidden');
+            welcomeCard.classList.add('active');
+
+            // Return to Plain Idle State after 8 seconds
+            hideTimeout = setTimeout(() => {
+                resetToPlain();
+            }, 8000);
+        }
+
+        function resetToPlain() {
+            clearTimeout(hideTimeout);
+            welcomeCard.classList.remove('active');
+            idleCard.classList.remove('hidden');
+        }
+
+        function testScan(rawText) {
+            handleScanPayload(rawText);
+        }
+    </script>
+</body>
+
+</html>
