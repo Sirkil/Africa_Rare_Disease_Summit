@@ -317,6 +317,10 @@
             align-content: center;
         }
 
+        #screen-categories {
+            overflow-y: auto;
+        }
+
         .category-card {
             background: var(--bg-card);
             border: 1px solid var(--border-light);
@@ -449,6 +453,7 @@
             color: #e2e8f0;
             letter-spacing: 0.05em;
             text-transform: uppercase;
+            max-width: min(70vw, 700px);
         }
 
         .question-counter {
@@ -651,10 +656,12 @@
             padding: 0.4rem;
             border-radius: 50px;
             border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow-x: auto;
+            flex-shrink: 0;
         }
 
         .tab-btn {
-            flex: 1;
+            flex: 0 0 auto;
             padding: 0.75rem 1rem;
             border-radius: 40px;
             border: none;
@@ -688,6 +695,10 @@
             flex-direction: column;
             gap: 1.2rem;
             flex: 1;
+            overflow-y: auto;
+        }
+
+        #screen-question {
             overflow-y: auto;
         }
 
@@ -815,15 +826,15 @@
                 </button>
             </section>
 
-            <!-- SCREEN 2: SPECIALTY CATEGORIES -->
+            <!-- SCREEN 2: DISEASE CATEGORIES -->
             <section id="screen-categories" class="screen">
                 <div class="screen-navbar">
                     <div class="nav-logo-wrap">
                         <img src="../assets/africa_logo.png" alt="Africa Logo" class="nav-logo" onerror="this.src='assets/africa_logo.png'">
                     </div>
                     <div class="nav-title-wrap">
-                        <h2 class="nav-title">Select Your Specialty</h2>
-                        <p class="nav-subtitle">Choose your medical field to start your 2-question challenge</p>
+                        <h2 class="nav-title">Select a Disease Category</h2>
+                        <p class="nav-subtitle">Choose a category to answer its questions</p>
                     </div>
                 </div>
 
@@ -838,9 +849,9 @@
                     <div class="quiz-top-bar">
                         <div style="display: flex; align-items: center; gap: 0.9rem;">
                             <img src="../assets/africa_logo.png" alt="Africa Logo" style="height: 45px; width: auto; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));" onerror="this.src='assets/africa_logo.png'">
-                            <div id="quiz-specialty-badge" class="specialty-tag">PEDIATRICS</div>
+                            <div id="quiz-specialty-badge" class="specialty-tag"></div>
                         </div>
-                        <div id="quiz-progress-text" class="question-counter">Question 1 of 2</div>
+                        <div id="quiz-progress-text" class="question-counter"></div>
                     </div>
                     <div class="progress-bar-container">
                         <div id="quiz-progress-fill" class="progress-bar-fill"></div>
@@ -888,27 +899,20 @@
                             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                             <polyline points="22 4 12 14.01 9 11.01"></polyline>
                         </svg>
-                        Score: 2 / 2 Correct
+                        Score
                     </div>
                 </div>
 
-                <!-- Explanation Tabs -->
-                <div class="explanation-tabs">
-                    <button id="tab-q1" class="tab-btn active" onclick="switchExplanationTab(0)">
-                        Question 1 Review
-                    </button>
-                    <button id="tab-q2" class="tab-btn" onclick="switchExplanationTab(1)">
-                        Question 2 Review
-                    </button>
-                </div>
+                <!-- Answer Review Tabs -->
+                <div id="explanation-tabs" class="explanation-tabs"></div>
 
-                <!-- Detailed Explanation Display Container -->
+                <!-- Answer Review Container -->
                 <div id="explanation-content-card" class="explanation-card">
                     <!-- Rendered by JS -->
                 </div>
 
                 <div class="completion-actions">
-                    <button id="btn-other-specialty" class="secondary-btn">Try Another Specialty</button>
+                    <button id="btn-other-specialty" class="secondary-btn">Try Another Category</button>
                     <button id="btn-restart" class="primary-btn">Restart Challenge</button>
                 </div>
             </section>
@@ -917,187 +921,438 @@
 
         <!-- QUIZ ENGINE SCRIPT -->
         <script>
-            /* --- CLINICAL QUIZ DATASET (6 SPECIALTIES, 2 QUESTIONS EACH) --- */
+            /* --- QUESTIONS AND ANSWER KEYS FROM THE PROVIDED WORD DOCUMENT --- */
+            /* correctIndex is zero-based: 0 = A, 1 = B, 2 = C, 3 = D. */
             const QUIZ_DATA = [
                 {
-                    id: 'pediatrics',
-                    title: 'Pediatrics',
-                    desc: 'Childhood metabolic & genetic rare conditions',
-                    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a5 5 0 0 1 5 5v3a5 5 0 0 1-10 0V7a5 5 0 0 1 5-5z"></path><path d="M19 14v1a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4v-1"></path><circle cx="9" cy="8" r="1"></circle><circle cx="15" cy="8" r="1"></circle></svg>`,
-                    questions: [
+                    "id": "gaucher",
+                    "title": "Gaucher",
+                    "questions": [
                         {
-                            question: "A 4-year-old child presents with progressive splenomegaly, bone pain, fatigue, and severe thrombocytopenia. Bone marrow aspirate shows glycolipid-laden macrophages with a 'wrinkled tissue paper' appearance. What is the most likely diagnosis?",
-                            options: [
-                                "Gaucher Disease Type 1",
-                                "Acute Lymphoblastic Leukemia",
-                                "Niemann-Pick Disease Type C",
-                                "Idiopathic Thrombocytopenic Purpura"
+                            "question": "What is the primary enzymatic defect responsible for Gaucher disease?",
+                            "options": [
+                                "Deficiency of acid alpha-glucosidase",
+                                "Deficiency of beta-glucocerebrosidase (acid beta-glucosidase)",
+                                "Deficiency of alpha-galactosidase A",
+                                "Deficiency of alpha-L-iduronidase"
                             ],
-                            correctIndex: 0,
-                            explanation: "Gaucher disease is an autosomal recessive lysosomal storage disorder caused by glucocerebrosidase (GBA) enzyme deficiency. Accumulation of glucocerebroside produces pathognomonic lipid-laden macrophages ('Gaucher cells'). Early Enzyme Replacement Therapy (ERT) reverses organomegaly and prevents irreversible skeletal complications."
+                            "correctIndex": 1
                         },
                         {
-                            question: "A 3-month-old infant displays severe symmetrical proximal muscle weakness, bell-shaped chest, tongue fasciculations, and absence of deep tendon reflexes while cognitive awareness is completely preserved. Which gene mutation is responsible?",
-                            options: [
-                                "SMN1 gene homozygous deletion or mutation",
-                                "DMD gene exon deletion",
-                                "GAA gene acid alpha-glucosidase deficiency",
-                                "PMP22 gene duplication"
+                            "question": "Which lipid substrate accumulates within macrophages (forming \"Gaucher cells\") in patients with Gaucher disease?",
+                            "options": [
+                                "Sphingomyelin",
+                                "Glucosylceramide (glucocerebroside)",
+                                "Globotriaosylceramide (GL-3)",
+                                "Dermatan sulfate"
                             ],
-                            correctIndex: 0,
-                            explanation: "Spinal Muscular Atrophy (SMA Type 1 / Werdnig-Hoffmann disease) is caused by loss-of-function mutations in the SMN1 gene leading to motor neuron degeneration. Early administration of SMN2 splicing modifiers or SMN1 gene replacement therapy dramatically improves motor function when initiated before irreversible neuronal loss."
+                            "correctIndex": 1
+                        },
+                        {
+                            "question": "Which of the following is the clinical subtype of Gaucher disease, characterized by the absence of primary neurological involvement?",
+                            "options": [
+                                "Type 1 (Non-neuronopathic)",
+                                "Type 2 (Acute infantile neuronopathic)",
+                                "Type 3 (Subacute neuronopathic)",
+                                "Perinatal lethal form"
+                            ],
+                            "correctIndex": 0
+                        },
+                        {
+                            "question": "Bone involvement in Gaucher disease can lead to characteristic radiological findings in the distal femurs, commonly referred to as:",
+                            "options": [
+                                "Erlenmeyer flask deformity",
+                                "Ivory vertebrae",
+                                "Codfish vertebrae",
+                                "Pencil-in-cup deformity"
+                            ],
+                            "correctIndex": 0
+                        },
+                        {
+                            "question": "Which therapeutic approach is commonly used to treat systemic manifestations in patients with Type 1 Gaucher disease?",
+                            "options": [
+                                "Enzyme replacement therapy (ERT) with recombinant glucocerebrosidase",
+                                "Bone marrow stimulants like erythropoietin only",
+                                "Dietary restriction of all dietary lipids",
+                                "High-dose vitamin B12 supplementation"
+                            ],
+                            "correctIndex": 0
+                        },
+                        {
+                            "question": "Neurological symptoms such as horizontal supranuclear gaze palsy are characteristic of which Gaucher disease type?",
+                            "options": [
+                                "Type 1",
+                                "Type 2 only",
+                                "Type 3",
+                                "None of the above"
+                            ],
+                            "correctIndex": 2
                         }
-                    ]
+                    ],
+                    "desc": "Gaucher",
+                    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"9\"></circle><circle cx=\"12\" cy=\"12\" r=\"3\"></circle></svg>"
                 },
                 {
-                    id: 'dental',
-                    title: 'Dental & Oral',
-                    desc: 'Craniofacial & oral rare manifestations',
-                    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 2 5 5 5 9c0 3.5 1.5 6 3 8.5C9.5 20 10.5 22 12 22s2.5-2 4-4.5c1.5-2.5 3-5 3-8.5 0-4-3-7-7-7z"></path></svg>`,
-                    questions: [
+                    "id": "asmd",
+                    "title": "ASMD",
+                    "questions": [
                         {
-                            question: "A 5-year-old child experiences premature spontaneous loss of primary teeth before age 2 with completely intact roots, accompanied by low serum alkaline phosphatase (ALP). Which metabolic bone disorder should be suspected?",
-                            options: [
-                                "Hypophosphatasia (HPP)",
-                                "Amelogenesis Imperfecta",
-                                "Cleidocranial Dysplasia",
-                                "Dentinogenesis Imperfecta"
+                            "question": "ASMD is caused by mutations in the SMPD1 gene, which encodes which deficient enzyme?",
+                            "options": [
+                                "Acid sphingomyelinase (sphingomyelin phosphodiesterase)",
+                                "Sphingosine kinase",
+                                "Acid ceramidase",
+                                "Arylsulfatase A"
                             ],
-                            correctIndex: 0,
-                            explanation: "Hypophosphatasia (HPP) is caused by mutations in the ALPL gene encoding tissue-nonspecific alkaline phosphatase. Loss of cementum results in premature loss of primary teeth with intact roots. Low serum ALP is a key diagnostic marker, and treatment with recombinant enzyme replacement (asfotase alfa) restores bone/dental mineralization."
+                            "correctIndex": 0
                         },
                         {
-                            question: "A patient presents with multiple supernumerary teeth, delayed eruption of permanent teeth, hypermobility of shoulders due to aplastic clavicles, and open cranial sutures. Which genetic syndrome accounts for this triad?",
-                            options: [
-                                "Cleidocranial Dysplasia (RUNX2 mutation)",
-                                "Gardner Syndrome",
-                                "Gorlin-Goltz Syndrome",
-                                "Osteogenesis Imperfecta Type I"
+                            "question": "Which lipid abnormally accumulates within lysosomes in tissues throughout the body in ASMD?",
+                            "options": [
+                                "Cholesterol ester",
+                                "Sphingomyelin",
+                                "Galactocerebroside",
+                                "Sulfatide"
                             ],
-                            correctIndex: 0,
-                            explanation: "Cleidocranial Dysplasia (CCD) is an autosomal dominant skeletal disorder caused by RUNX2 gene mutations. Key dental findings include impacted permanent teeth, multiple supernumerary teeth, and palate anomalies alongside clavicular hypoplasia."
+                            "correctIndex": 1
+                        },
+                        {
+                            "question": "Niemann-Pick Disease Type A is clinically distinguished from Type B primarily by:",
+                            "options": [
+                                "Absence of organomegaly in Type A",
+                                "Severe, rapidly progressive neurodegeneration leading to death in early childhood for Type A",
+                                "Adult-onset bone marrow failure only in Type A",
+                                "X-linked dominant inheritance pattern"
+                            ],
+                            "correctIndex": 1
+                        },
+                        {
+                            "question": "Which of the following organs typically exhibits massive enlargement in ASMD patients?",
+                            "options": [
+                                "Thyroid and pancreas",
+                                "Liver and spleen (hepatosplenomegaly)",
+                                "Kidneys and adrenals",
+                                "Lungs and heart valves exclusively"
+                            ],
+                            "correctIndex": 1
+                        },
+                        {
+                            "question": "In contrast to Type A, patients with ASMD Type B generally have:",
+                            "options": [
+                                "Early childhood fatal neurological disease",
+                                "Little or no neurological involvement, allowing survival into adulthood",
+                                "Isolated skin lesions without visceral involvement",
+                                "Primary renal failure as the initial presentation"
+                            ],
+                            "correctIndex": 1
+                        },
+                        {
+                            "question": "What is the inheritance pattern of ASMD?",
+                            "options": [
+                                "Autosomal dominant",
+                                "Autosomal recessive",
+                                "X-linked recessive",
+                                "Mitochondrial"
+                            ],
+                            "correctIndex": 1
+                        },
+                        {
+                            "question": "Enzyme replacement therapy (Olipudase alfa) has been developed primarily for the treatment of which manifestations of ASMD?",
+                            "options": [
+                                "Non-central nervous system (systemic) manifestations",
+                                "Severe central nervous system neurodegeneration",
+                                "Acute infantile brainstem failure",
+                                "Retinal degeneration"
+                            ],
+                            "correctIndex": 0
                         }
-                    ]
+                    ],
+                    "desc": "ASMD",
+                    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"9\"></circle><path d=\"M5 12h14M12 5v14\"></path></svg>"
                 },
                 {
-                    id: 'cardiology',
-                    title: 'Cardiology',
-                    desc: 'Rare cardiovascular & infiltrative diseases',
-                    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.84-8.84 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`,
-                    questions: [
+                    "id": "pompe",
+                    "title": "Pompe",
+                    "questions": [
                         {
-                            question: "A 35-year-old male presents with unexplained left ventricular hypertrophy (LVH), severe neuropathic acroparesthesias in hands and feet, hypohidrosis, and angiokeratomas. What lysosomal disorder is responsible?",
-                            options: [
-                                "Fabry Disease (GLA deficiency)",
-                                "Transthyretin Cardiac Amyloidosis",
-                                "Pompe Disease (GAA deficiency)",
-                                "Danon Disease (LAMP2 mutation)"
+                            "question": "Pompe disease is classified as a glycogen storage disease (Type II) caused by a deficiency of which enzyme?",
+                            "options": [
+                                "Glucose-6-phosphatase",
+                                "Acid alpha-glucosidase (GAA)",
+                                "Muscle glycogen phosphorylase",
+                                "Debranching enzyme (Amylo-1,6-glucosidase)"
                             ],
-                            correctIndex: 0,
-                            explanation: "Fabry Disease is an X-linked lysosomal storage disorder caused by alpha-galactosidase A (GLA) deficiency. Globotriaosylceramide (Gb3) accumulation in endothelial cells and myocytes leads to progressive concentric LVH, heart failure, and renal decline. Specific enzyme replacement or chaperone therapies arrest disease progression."
+                            "correctIndex": 1
                         },
                         {
-                            question: "An 68-year-old patient with a history of bilateral carpal tunnel syndrome presents with heart failure with preserved ejection fraction (HFpEF). Which diagnostic test non-invasively confirms Transthyretin Cardiac Amyloidosis (ATTR-CM)?",
-                            options: [
-                                "99mTc-PYP / DPD Bone Scintigraphy Scan",
-                                "Serum protein electrophoresis alone",
-                                "Exercise treadmill stress test",
-                                "Coronary Angiography"
+                            "question": "What is the classic presentation of Infantile-Onset Pompe Disease (IOPD)?",
+                            "options": [
+                                "Isolated joint contractures and corneal clouding",
+                                "Profound hypotonia (\"floppy baby\"), cardiomegaly, and heart failure",
+                                "Adult-onset progressive limb-girdle weakness",
+                                "Recurrent hypoglycemia and lactic acidosis"
                             ],
-                            correctIndex: 0,
-                            explanation: "Transthyretin Cardiac Amyloidosis (ATTR-CM) often presents with HFpEF preceded by orthopedic signs like carpal tunnel syndrome. Technetium-99m pyrophosphate (99mTc-PYP) scintigraphy non-invasively confirms ATTR cardiac amyloid deposition with high specificity without requiring invasive endomyocardial biopsy."
+                            "correctIndex": 1
+                        },
+                        {
+                            "question": "Respiratory involvement is a hallmark of both infantile and late-onset Pompe disease due to glycogen accumulation in:",
+                            "options": [
+                                "Diaphragm and respiratory skeletal muscles",
+                                "Alveolar pneumocytes type I",
+                                "The respiratory control center in the medulla oblongata",
+                                "The pleural membranes"
+                            ],
+                            "correctIndex": 0
+                        },
+                        {
+                            "question": "What is the primary treatment approved for addressing the underlying enzyme defect in Pompe disease?",
+                            "options": [
+                                "High-carbohydrate, low-fat diet",
+                                "Enzyme replacement therapy (ERT) using recombinant human acid alpha-glucosidase (rhGAA)",
+                                "Chronic systemic corticosteroid therapy",
+                                "Gene editing via CRISPR-Cas9 targeting hepatocytes"
+                            ],
+                            "correctIndex": 1
+                        },
+                        {
+                            "question": "What is the inheritance pattern of Pompe disease?",
+                            "options": [
+                                "Autosomal dominant",
+                                "Autosomal recessive",
+                                "X-linked recessive",
+                                "X-linked dominant"
+                            ],
+                            "correctIndex": 1
+                        },
+                        {
+                            "question": "Diagnostic confirmation of Pompe disease can be achieved by measuring GAA enzyme activity in:",
+                            "options": [
+                                "Dried blood spots (DBS), leukocytes, or cultured fibroblasts",
+                                "Urine samples via dipstick analysis",
+                                "Cerebrospinal fluid only",
+                                "Saliva amylase assays"
+                            ],
+                            "correctIndex": 0
+                        },
+                        {
+                            "question": "Cross-reactive immunologic material (CRIM) status in infantile Pompe disease refers to:",
+                            "options": [
+                                "The presence or absence of endogenous native GAA protein expression, which predicts the immune response to ERT",
+                                "The antibody titer against muscle cell membranes",
+                                "The cross-reactivity with alpha-galactosidase antibodies",
+                                "The binding affinity of glycogen to lysosomes"
+                            ],
+                            "correctIndex": 0
                         }
-                    ]
+                    ],
+                    "desc": "Pompe",
+                    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 19l5-7 4 3 7-10\"></path><path d=\"M4 5v14h16\"></path></svg>"
                 },
                 {
-                    id: 'neurology',
-                    title: 'Neurology',
-                    desc: 'Neurodegenerative & neuromuscular disorders',
-                    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a7 7 0 0 0-7 7c0 2.38 1.19 4.47 3 5.74V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.26c1.81-1.27 3-3.36 3-5.74a7 7 0 0 0-7-7z"></path><path d="M9 21h6"></path></svg>`,
-                    questions: [
+                    "id": "fabry",
+                    "title": "Fabry Disease",
+                    "questions": [
                         {
-                            question: "A 42-year-old adult presents with progressive proximal lower limb weakness, exertional dyspnea, morning headaches, and elevated serum creatine kinase. What metabolic myopathy should be evaluated?",
-                            options: [
-                                "Late-Onset Pompe Disease (GAA deficiency)",
-                                "Myasthenia Gravis",
-                                "Limb-Girdle Muscular Dystrophy 2A",
-                                "Amyotrophic Lateral Sclerosis"
+                            "question": "What is the underlying enzymatic defect in Fabry disease?",
+                            "options": [
+                                "Deficiency of alpha-galactosidase A",
+                                "Deficiency of beta-galactosidase",
+                                "Deficiency of iduronate-2-sulfatase",
+                                "Deficiency of acid sphingomyelinase"
                             ],
-                            correctIndex: 0,
-                            explanation: "Late-Onset Pompe Disease (LOPD) is caused by acid alpha-glucosidase (GAA) deficiency. Diaphragmatic weakness causing nocturnal hypoventilation combined with limb-girdle weakness is characteristic. Enzyme Replacement Therapy (ERT) halts muscle degeneration."
+                            "correctIndex": 0
                         },
                         {
-                            question: "A patient presents with choreiform movements, progressive executive dysfunction, and caudate nucleus atrophy on MRI. What genetic defect confirms Huntington's Disease?",
-                            options: [
-                                "HTT gene CAG trinucleotide repeat expansion",
-                                "FXN gene GAA repeat expansion",
-                                "C9orf72 hexanucleotide expansion",
-                                "ATXN1 gene CAG expansion"
+                            "question": "What is the unique inheritance pattern of Fabry disease?",
+                            "options": [
+                                "Autosomal dominant",
+                                "Autosomal recessive",
+                                "X-linked recessive (with significant disease manifestations also occurring in heterozygous females)",
+                                "Mitochondrial maternal inheritance"
                             ],
-                            correctIndex: 0,
-                            explanation: "Huntington's Disease is caused by an expanded CAG trinucleotide repeat in the HTT gene on chromosome 4. Degeneration of striatal medium spiny neurons causes chorea, executive dysfunction, and psychiatric disturbances."
+                            "correctIndex": 2
+                        },
+                        {
+                            "question": "Which lipid substrate accumulates systemically in vascular endothelial and smooth muscle cells of Fabry disease patients?",
+                            "options": [
+                                "Glucosylceramide",
+                                "Globotriaosylceramide (GL-3 or Gb3) and globotriaosylsphingosine (lyso-Gb3)",
+                                "Cholesterol sulfate",
+                                "Ceramide trihexoside degradation inhibitors"
+                            ],
+                            "correctIndex": 1
+                        },
+                        {
+                            "question": "What is the term for the painful, burning sensations in the hands and feet often experienced by children and adolescents with Fabry disease (often triggered by heat or exercise)?",
+                            "options": [
+                                "Raynaud's phenomenon",
+                                "Fabry acroparesthesias (Fabry crises)",
+                                "Restless legs syndrome",
+                                "Causalgia"
+                            ],
+                            "correctIndex": 1
+                        },
+                        {
+                            "question": "Cutaneous manifestations of Fabry disease often include small, dark red/purple skin lesions distributed in a \"bathing suit\" distribution, known as:",
+                            "options": [
+                                "Telangiectasias",
+                                "Angiokeratomas",
+                                "Petechiae",
+                                "Cherry angiomas"
+                            ],
+                            "correctIndex": 1
+                        },
+                        {
+                            "question": "What is the characteristic ophthalmologic finding associated with Fabry disease, seen as whorl-like corneal opacities?",
+                            "options": [
+                                "Kayser-Fleischer rings",
+                                "Cornea verticillata",
+                                "Brushfield spots",
+                                "Sunflower cataracts"
+                            ],
+                            "correctIndex": 1
+                        },
+                        {
+                            "question": "Renal involvement in Fabry disease typically progresses from early microalbuminuria and proteinuria to:",
+                            "options": [
+                                "Chronic tubulointerstitial nephritis with renal salt wasting",
+                                "End-stage renal disease (ESRD) requiring dialysis or transplantation",
+                                "Bilateral renal cell carcinoma",
+                                "Renal artery fibromuscular dysplasia"
+                            ],
+                            "correctIndex": 1
+                        },
+                        {
+                            "question": "Cardiac complications in Fabry disease frequently include:",
+                            "options": [
+                                "Concentric left ventricular hypertrophy (LVH), arrhythmias, and fibrosis",
+                                "Myocarditis due to viral persistence",
+                                "Tricuspid valve atresia",
+                                "Dilated cardiomyopathy with depressed ejection fraction early in life"
+                            ],
+                            "correctIndex": 0
+                        },
+                        {
+                            "question": "Stroke and transient ischemic attacks (TIAs) in young adults with Fabry disease are typically caused by:",
+                            "options": [
+                                "Accelerated atherosclerosis and small vessel disease due to glycosphingolipid deposition in cerebral vasculature",
+                                "Cardioembolism secondary to rheumatic heart disease",
+                                "Ruptured saccular (berry) aneurysms of the circle of Willis",
+                                "Carotid artery dissection"
+                            ],
+                            "correctIndex": 0
                         }
-                    ]
+                    ],
+                    "desc": "Fabry Disease",
+                    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 21s-9-5.5-9-11a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 5.5-9 11-9 11z\"></path></svg>"
                 },
                 {
-                    id: 'genetics',
-                    title: 'Genetics',
-                    desc: 'Inborn errors of metabolism & storage diseases',
-                    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 15c6.667-6 13.333 0 20-6"></path><path d="M2 9c6.667 6 13.333 0 20 6"></path><circle cx="6" cy="12" r="1.5"></circle><circle cx="18" cy="12" r="1.5"></circle></svg>`,
-                    questions: [
+                    "id": "mps-i",
+                    "title": "Mucopolysaccharidosis Type I (MPS I )",
+                    "questions": [
                         {
-                            question: "An 18-month-old child presents with coarse facial features, hepatosplenomegaly, corneal clouding, and joint stiffness. Urinary GAGs show elevated dermatan and heparan sulfate. What enzyme is deficient?",
-                            options: [
-                                "Alpha-L-iduronidase (MPS I / Hurler Syndrome)",
-                                "Iduronate-2-sulfatase (MPS II / Hunter)",
-                                "Beta-galactosidase (GM1 Gangliosidosis)",
-                                "Sphingomyelinase (Niemann-Pick A)"
+                            "question": "MPS I is caused by a deficiency of which lysosomal enzyme?",
+                            "options": [
+                                "Iduronate-2-sulfatase",
+                                "Alpha-L-iduronidase (IDUA)",
+                                "Heparan N-sulfatase",
+                                "N-acetylgalactosamine-4-sulfatase"
                             ],
-                            correctIndex: 0,
-                            explanation: "Mucopolysaccharidosis Type I (MPS I) is caused by alpha-L-iduronidase deficiency. Deposition of glycosaminoglycans produces dysostosis multiplex, coarse facial features, corneal opacity, and organomegaly. Early hematopoietic stem cell transplant or ERT prevents neurocognitive decline."
+                            "correctIndex": 1
                         },
                         {
-                            question: "What is the key clinical advantage of early newborn screening for rare metabolic disorders such as Phenylketonuria (PKU)?",
-                            options: [
-                                "Enables presymptomatic intervention to prevent irreversible organ/brain damage",
-                                "Eliminates the requirement for lifetime dietary or medical management",
-                                "Identifies maternal carrier status exclusively without child testing",
-                                "Provides immediate gene therapy curing the condition permanently"
+                            "question": "Which specific glycosaminoglycans (GAGs) accumulate in tissues and are excreted in excess in the urine of patients with MPS I?",
+                            "options": [
+                                "Keratan sulfate and chondroitin sulfate",
+                                "Dermatan sulfate and heparan sulfate",
+                                "Hyaluronic acid only",
+                                "Heparan sulfate and keratan sulfate"
                             ],
-                            correctIndex: 0,
-                            explanation: "Newborn screening allows presymptomatic detection of rare metabolic disorders. In PKU, early dietary restriction of phenylalanine initiated immediately after birth prevents severe, irreversible intellectual disability."
-                        }
-                    ]
-                },
-                {
-                    id: 'internal',
-                    title: 'Internal Med',
-                    desc: 'Multisystemic & auto-inflammatory rare diseases',
-                    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>`,
-                    questions: [
-                        {
-                            question: "A 28-year-old female presents with recurrent episodes of severe non-pruritic swelling in the face and extremities with painful abdominal attacks. Antihistamines provide no relief. Serum C4 is low. What condition is present?",
-                            options: [
-                                "Hereditary Angioedema (C1-INH deficiency)",
-                                "Dietary Anaphylaxis",
-                                "Idiopathic Autoimmune Urticaria",
-                                "Systemic Lupus Erythematosus"
-                            ],
-                            correctIndex: 0,
-                            explanation: "Hereditary Angioedema (HAE) results from C1-inhibitor deficiency or dysfunction, causing unchecked bradykinin generation. HAE attacks do not respond to allergy treatments (epinephrine, steroids, antihistamines) and require C1-INH concentrates or bradykinin B2 receptor antagonists."
+                            "correctIndex": 1
                         },
                         {
-                            question: "A 40-year-old non-smoker presents with progressive panacinar emphysema and unexplained liver transaminitis. Serum electrophoresis shows a reduced alpha-1 globulin peak. What is the diagnosis?",
-                            options: [
-                                "Alpha-1 Antitrypsin Deficiency (SERPINA1 mutation)",
-                                "Cystic Fibrosis (CFTR mutation)",
-                                "Hereditary Hemochromatosis",
-                                "Wilson Disease (ATP7B mutation)"
+                            "question": "What is the inheritance pattern of MPS I?",
+                            "options": [
+                                "Autosomal dominant",
+                                "Autosomal recessive",
+                                "X-linked recessive",
+                                "X-linked dominant"
                             ],
-                            correctIndex: 0,
-                            explanation: "Alpha-1 Antitrypsin Deficiency (AATD) is caused by SERPINA1 mutations. Polymerization of misfolded AAT in hepatocytes causes liver disease, while severe serum deficiency permits uninhibited neutrophil elastase activity leading to early-onset panacinar emphysema."
+                            "correctIndex": 1
+                        },
+                        {
+                            "question": "Which clinical subtype represents the most severe form of MPS I, classically characterized by progressive cognitive impairment, coarse facial features, and skeletal dysplasia?",
+                            "options": [
+                                "Scheie syndrome",
+                                "Hurler-Scheie syndrome",
+                                "Hurler syndrome (MPS I H)",
+                                "Morquio syndrome"
+                            ],
+                            "correctIndex": 2
+                        },
+                        {
+                            "question": "What is the term for the characteristic clouding of the cornea frequently seen in MPS I patients?",
+                            "options": [
+                                "Corneal haze or corneal clouding (due to GAG deposition in keratocytes)",
+                                "Keratoconus",
+                                "Fuchs' endothelial dystrophy",
+                                "Interstitial keratitis"
+                            ],
+                            "correctIndex": 0
+                        },
+                        {
+                            "question": "Skeletal abnormalities collectively referred to as \"dysostosis multiplex\" in MPS I include:",
+                            "options": [
+                                "Bullet-shaped metacarpals, flared iliac wings, and lumbar vertebral gibbus deformity (beaking)",
+                                "Long, slender spider-like fingers (arachnodactyly)",
+                                "Absent clavicles and wide cranial sutures",
+                                "Asymmetric limb shortening (achondroplasia-like)"
+                            ],
+                            "correctIndex": 0
+                        },
+                        {
+                            "question": "Why is hematopoietic stem cell transplantation (HSCT) or bone marrow transplantation typically considered early in life for the severe phenotype (Hurler syndrome)?",
+                            "options": [
+                                "It can halt or significantly slow neurocognitive decline and partially ameliorate somatic symptoms if performed early",
+                                "It completely reverses existing corneal opacities within weeks",
+                                "It corrects cardiac valve defects permanently without the need for surgery",
+                                "It cures the underlying genetic mutation in germline cells"
+                            ],
+                            "correctIndex": 0
+                        },
+                        {
+                            "question": "Cardiovascular manifestations commonly seen in MPS I include:",
+                            "options": [
+                                "Valvular thickening and regurgitation (especially mitral and aortic valves)",
+                                "Coarctation of the aorta",
+                                "Myxomatous degeneration with spontaneous valve rupture",
+                                "Constrictive pericarditis"
+                            ],
+                            "correctIndex": 0
+                        },
+                        {
+                            "question": "Enzyme replacement therapy (Laronidase) for MPS I is effective for managing:",
+                            "options": [
+                                "Somatic symptoms (such as joint stiffness, hepatosplenomegaly, and respiratory function)",
+                                "Central nervous system cognitive decline, as it readily crosses the blood-brain barrier",
+                                "Severe visual loss from corneal clouding",
+                                "Sensorineural hearing loss"
+                            ],
+                            "correctIndex": 0
+                        },
+                        {
+                            "question": "Upper airway obstruction, restrictive pulmonary disease, and obstructive sleep apnea in MPS I patients are primarily driven by:",
+                            "options": [
+                                "GAG deposition in upper airway tissues, macroglossia, and tracheal narrowing/malacia",
+                                "Primary central hypoventilation from brainstem compression",
+                                "Severe chronic asthma and bronchospasm",
+                                "Diaphragmatic paralysis due to phrenic nerve entrapment"
+                            ],
+                            "correctIndex": 0
                         }
-                    ]
+                    ],
+                    "desc": "Mucopolysaccharidosis Type I (MPS I )",
+                    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 7h16M4 12h16M4 17h16\"></path></svg>"
                 }
             ];
 
@@ -1105,7 +1360,7 @@
             let currentScreen = 'screen-welcome';
             let selectedSpecialty = null;
             let currentQuestionIndex = 0;
-            let userAnswers = []; // stores selected option indices for Q1 and Q2
+            let userAnswers = []; // selected option index for each question
             let currentExplanationTab = 0;
 
             /* --- AUDIO REMOVED --- */
@@ -1172,7 +1427,7 @@
                             <p class="card-desc">${cat.desc}</p>
                         </div>
                         <div class="card-footer-badge">
-                            2 Questions
+                            ${cat.questions.length} Questions
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                 <line x1="5" y1="12" x2="19" y2="12"></line>
                                 <polyline points="12 5 19 12 12 19"></polyline>
@@ -1202,8 +1457,9 @@
                 const qData = selectedSpecialty.questions[index];
 
                 // Progress Header
-                document.getElementById('quiz-progress-text').innerText = `Question ${index + 1} of 2`;
-                const fillPct = ((index + 1) / 2) * 100;
+                const questionCount = selectedSpecialty.questions.length;
+                document.getElementById('quiz-progress-text').innerText = `Question ${index + 1} of ${questionCount}`;
+                const fillPct = ((index + 1) / questionCount) * 100;
                 document.getElementById('quiz-progress-fill').style.width = `${fillPct}%`;
 
                 // Question Text
@@ -1230,7 +1486,7 @@
                 const submitBtn = document.getElementById('btn-submit-answer');
                 submitBtn.classList.remove('active');
                 submitBtn.innerHTML = `
-                ${index === 1 ? 'Finish Challenge' : 'Submit Answer'}
+                ${index === questionCount - 1 ? 'Finish Challenge' : 'Submit Answer'}
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                     <polyline points="12 5 19 12 12 19"></polyline>
@@ -1259,8 +1515,8 @@
                 if (userAnswers[currentQuestionIndex] === undefined) return;
 
                 playSound('click');
-                if (currentQuestionIndex < 1) {
-                    loadQuestion(1);
+                if (currentQuestionIndex < selectedSpecialty.questions.length - 1) {
+                    loadQuestion(currentQuestionIndex + 1);
                 } else {
                     renderCompletionScreen();
                     showScreen('screen-completion');
@@ -1283,9 +1539,18 @@
                     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                     <polyline points="22 4 12 14.01 9 11.01"></polyline>
                 </svg>
-                Score: ${correctCount} / 2 Correct (${correctCount === 2 ? '100% Perfect!' : correctCount === 1 ? '50% Good Effort' : 'Review Explanations'})
+                Score: ${correctCount} / ${selectedSpecialty.questions.length} Correct
             `;
 
+                const tabs = document.getElementById('explanation-tabs');
+                tabs.innerHTML = '';
+                selectedSpecialty.questions.forEach((q, index) => {
+                    const tab = document.createElement('button');
+                    tab.className = 'tab-btn';
+                    tab.textContent = `Question ${index + 1}`;
+                    tab.addEventListener('click', () => switchExplanationTab(index));
+                    tabs.appendChild(tab);
+                });
                 switchExplanationTab(0);
             }
 
@@ -1294,8 +1559,9 @@
                 playSound('click');
                 currentExplanationTab = tabIdx;
 
-                document.getElementById('tab-q1').classList.toggle('active', tabIdx === 0);
-                document.getElementById('tab-q2').classList.toggle('active', tabIdx === 1);
+                document.querySelectorAll('#explanation-tabs .tab-btn').forEach((tab, index) => {
+                    tab.classList.toggle('active', index === tabIdx);
+                });
 
                 const qData = selectedSpecialty.questions[tabIdx];
                 const userChoiceIdx = userAnswers[tabIdx];
@@ -1323,10 +1589,6 @@
                     </div>
                 ` : ''}
 
-                <div class="exp-text-block">
-                    <strong style="color: #ffffff; display: block; margin-bottom: 0.4rem;">Clinical Rationale:</strong>
-                    ${qData.explanation}
-                </div>
             `;
             }
         </script>
