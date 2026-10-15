@@ -108,14 +108,14 @@
             position: relative;
             z-index: 10;
             width: 100%;
-            max-width: 1080px;
+            max-width: 1440px;
             height: 100vh;
             max-height: 1920px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             overflow: hidden;
-            padding: 2.5rem 2rem 2.2rem 2rem;
+            padding: clamp(1rem, 2.2vw, 2.5rem);
         }
 
         /* --- COMMON HEADER WITH AFRICA MAP LOGO --- */
@@ -201,7 +201,7 @@
             flex-direction: column;
             align-items: center;
             gap: 1.4rem;
-            max-width: 850px;
+            max-width: 1000px;
         }
 
         .hero-title {
@@ -221,6 +221,35 @@
             text-align: center;
             max-width: 720px;
         }
+
+        .name-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.55rem;
+            width: min(100%, 560px);
+            text-align: left;
+            font-size: 1.05rem;
+            font-weight: 700;
+        }
+
+        .name-field input {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font: inherit;
+            user-select: text;
+            -webkit-user-select: text;
+        }
+
+        .name-field input:focus {
+            outline: 3px solid var(--color-purple);
+            outline-offset: 2px;
+        }
+
+        .name-field input::placeholder { color: #cbd5e1; }
 
         .begin-btn {
             position: relative;
@@ -311,10 +340,11 @@
 
         .categories-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1.25rem;
+            grid-template-columns: 1fr;
+            grid-template-rows: repeat(5, minmax(105px, 1fr));
+            gap: 0.9rem;
             flex: 1;
-            align-content: center;
+            min-height: 0;
         }
 
         #screen-categories {
@@ -325,7 +355,7 @@
             background: var(--bg-card);
             border: 1px solid var(--border-light);
             border-radius: 24px;
-            padding: 1.6rem 1.4rem;
+            padding: 1rem 1.4rem;
             display: flex;
             flex-direction: column;
             gap: 1rem;
@@ -362,7 +392,8 @@
             position: relative;
             z-index: 1;
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
+            align-items: center;
             height: 100%;
             justify-content: space-between;
             gap: 0.8rem;
@@ -397,6 +428,7 @@
             display: flex;
             flex-direction: column;
             gap: 0.3rem;
+            flex: 1;
         }
 
         .card-title {
@@ -420,6 +452,8 @@
             font-weight: 600;
             color: var(--color-pink);
             margin-top: 0.4rem;
+            gap: 0.7rem;
+            white-space: nowrap;
         }
 
         .card-footer-badge svg {
@@ -491,25 +525,25 @@
 
         .question-text {
             font-family: var(--font-heading);
-            font-size: 1.35rem;
+            font-size: clamp(1.35rem, 2vw, 2rem);
             font-weight: 600;
             line-height: 1.5;
             color: #ffffff;
         }
 
         .options-container {
-            display: flex;
-            flex-direction: column;
+            display: grid;
+            grid-template-rows: repeat(4, minmax(82px, 1fr));
             gap: 1rem;
             flex: 1;
-            justify-content: center;
+            min-height: 0;
         }
 
         .option-btn {
             background: rgba(255, 255, 255, 0.04);
             border: 1.5px solid rgba(255, 255, 255, 0.12);
             border-radius: 20px;
-            padding: 1.2rem 1.4rem;
+            padding: 1.3rem 1.5rem;
             display: flex;
             align-items: center;
             gap: 1.2rem;
@@ -551,6 +585,30 @@
             background: var(--gradient-btn);
             border-color: transparent;
             box-shadow: 0 4px 12px rgba(236, 72, 153, 0.4);
+        }
+
+        .option-btn.correct,
+        .option-btn.correct:hover {
+            background: rgba(16, 185, 129, 0.5);
+            border-color: #34d399;
+            transform: none;
+        }
+
+        .option-btn.incorrect,
+        .option-btn.incorrect:hover {
+            background: rgba(239, 68, 68, 0.5);
+            border-color: #f87171;
+            transform: none;
+        }
+
+        .option-btn:disabled { cursor: default; }
+
+        .answer-feedback {
+            min-height: 1.7rem;
+            text-align: center;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #fff;
         }
 
         .option-text {
@@ -596,16 +654,63 @@
             box-shadow: 0 12px 35px rgba(236, 72, 153, 0.5);
         }
 
+        .confetti-layer {
+            position: fixed;
+            inset: 0;
+            z-index: 30;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .confetti-piece {
+            position: absolute;
+            top: -20px;
+            width: 10px;
+            height: 18px;
+            animation: confetti-fall 2.6s linear forwards;
+        }
+
+        @keyframes confetti-fall {
+            to { transform: translate3d(var(--drift), 105vh, 0) rotate(var(--spin)); opacity: 0; }
+        }
+
+        @media (max-width: 650px) {
+            .app-logo { height: min(30vh, 250px); }
+            #screen-welcome { gap: 1.5rem; }
+            .hero-title { font-size: clamp(1.5rem, 5vw, 2.25rem); }
+            .hero-subtitle { font-size: 1rem; }
+            .screen-navbar { padding: 0.7rem; gap: 0.7rem; }
+            .nav-logo { height: 42px; }
+            .nav-title { font-size: 1.1rem; }
+            .category-card { padding: 0.7rem; }
+            .card-icon-wrap { width: 42px; height: 42px; }
+            .card-title { font-size: 1rem; }
+            .card-desc, .card-footer-badge { font-size: 0.75rem; }
+            .option-btn { padding: 0.7rem; gap: 0.7rem; }
+            .option-text { font-size: 0.95rem; }
+            .option-letter { width: 36px; height: 36px; }
+            .question-card { padding: 1rem; }
+            .quiz-top-bar { gap: 0.5rem; }
+            .question-counter { font-size: 0.8rem; white-space: nowrap; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .confetti-piece { animation: none; display: none; }
+        }
+
         /* --- SCREEN 4: COMPLETION & EXPLANATION --- */
         #screen-completion {
             gap: 1.2rem;
+            justify-content: center;
+            align-items: center;
         }
 
         .score-card {
             background: var(--bg-card);
             border: 1px solid var(--border-light);
             border-radius: 28px;
-            padding: 1.5rem 1.8rem;
+            padding: clamp(2rem, 5vw, 5rem);
+            width: min(100%, 900px);
             text-align: center;
             backdrop-filter: blur(16px);
             display: flex;
@@ -746,6 +851,7 @@
             display: flex;
             gap: 1rem;
             margin-top: 0.5rem;
+            width: min(100%, 900px);
         }
 
         .secondary-btn {
@@ -807,30 +913,36 @@
             <section id="screen-welcome" class="screen active">
                 <div class="logo-wrapper">
                     <div class="logo-glow"></div>
-                    <img src="../assets/africa_logo.png" alt="Africa Rare Diseases Summit Logo" class="app-logo"
+                    <img src="../assets/africa_logo_v2.png" alt="Africa Rare Diseases Summit Logo" class="app-logo"
                         onerror="this.src='assets/africa_logo.png'">
                 </div>
 
                 <div class="welcome-content">
                     <h1 class="hero-title">Rare Recognition Quiz</h1>
-                    <p class="hero-subtitle">What are clinicians in your</p>
-                    <p class="hero-subtitle">what is available to them</p>
+                    <p class="hero-subtitle">Test your knowledge of rare diseases</p>
                 </div>
-                <button id="btn-begin" class="begin-btn">
-                    Begin the quiz challenge
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                        <polyline points="12 5 19 12 12 19"></polyline>
-                    </svg>
-                </button>
+                <form id="welcome-form" class="welcome-content">
+                    <label class="name-field" for="participant-name">
+                        Your name
+                        <input id="participant-name" name="participant-name" type="text" maxlength="80"
+                            placeholder="Enter your name" autocomplete="name" required>
+                    </label>
+                    <button id="btn-begin" class="begin-btn" type="submit">
+                        Begin the quiz challenge
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </button>
+                </form>
             </section>
 
             <!-- SCREEN 2: DISEASE CATEGORIES -->
             <section id="screen-categories" class="screen">
                 <div class="screen-navbar">
                     <div class="nav-logo-wrap">
-                        <img src="../assets/africa_logo.png" alt="Africa Logo" class="nav-logo" onerror="this.src='assets/africa_logo.png'">
+                        <img src="../assets/africa_logo_v2.png" alt="Africa Logo" class="nav-logo" onerror="this.src='assets/africa_logo.png'">
                     </div>
                     <div class="nav-title-wrap">
                         <h2 class="nav-title">Select a Disease Category</h2>
@@ -848,7 +960,7 @@
                 <div>
                     <div class="quiz-top-bar">
                         <div style="display: flex; align-items: center; gap: 0.9rem;">
-                            <img src="../assets/africa_logo.png" alt="Africa Logo" style="height: 45px; width: auto; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));" onerror="this.src='assets/africa_logo.png'">
+                            <img src="../assets/africa_logo_v2.png" alt="Africa Logo" style="height: 45px; width: auto; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));" onerror="this.src='assets/africa_logo.png'">
                             <div id="quiz-specialty-badge" class="specialty-tag"></div>
                         </div>
                         <div id="quiz-progress-text" class="question-counter"></div>
@@ -866,9 +978,10 @@
                     <!-- Dynamic rendering of 4 options -->
                 </div>
 
+                <p id="answer-feedback" class="answer-feedback" role="status" aria-live="polite"></p>
                 <div class="action-footer">
-                    <button id="btn-submit-answer" class="next-btn">
-                        Submit Answer
+                    <button id="btn-submit-answer" class="next-btn" type="button" disabled>
+                        Next Question
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -878,7 +991,7 @@
                 </div>
             </section>
 
-            <!-- SCREEN 4: COMPLETION & EXPLANATIONS -->
+            <!-- SCREEN 4: COMPLETION -->
             <section id="screen-completion" class="screen">
                 <div class="score-card">
                     <div class="trophy-badge">
@@ -892,32 +1005,23 @@
                             <path d="M18 2H6v7a6 6 0 0 0 12 0V2z"></path>
                         </svg>
                     </div>
-                    <h2 class="score-title">Challenge Completed!</h2>
+                    <h2 class="score-title">Quiz Complete!</h2>
                     <div id="score-badge" class="score-value-badge">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2.5">
                             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                             <polyline points="22 4 12 14.01 9 11.01"></polyline>
                         </svg>
-                        Score
+                        You collected 0 of 0 correct answers
                     </div>
                 </div>
-
-                <!-- Answer Review Tabs -->
-                <div id="explanation-tabs" class="explanation-tabs"></div>
-
-                <!-- Answer Review Container -->
-                <div id="explanation-content-card" class="explanation-card">
-                    <!-- Rendered by JS -->
-                </div>
-
                 <div class="completion-actions">
-                    <button id="btn-other-specialty" class="secondary-btn">Try Another Category</button>
-                    <button id="btn-restart" class="primary-btn">Restart Challenge</button>
+                    <button id="btn-restart" class="primary-btn">Start Again</button>
                 </div>
             </section>
 
         </main>
+        <div id="confetti-layer" class="confetti-layer" aria-hidden="true"></div>
 
         <!-- QUIZ ENGINE SCRIPT -->
         <script>
@@ -1361,7 +1465,12 @@
             let selectedSpecialty = null;
             let currentQuestionIndex = 0;
             let userAnswers = []; // selected option index for each question
-            let currentExplanationTab = 0;
+            let participantName = '';
+            let answerLocked = false;
+            let nextReady = false;
+            let answerTimer = null;
+            // Paste the deployed Google Apps Script web app URL here after deployment.
+            const SCORE_ENDPOINT = 'https://script.google.com/macros/s/AKfycbygFMDCp8jtWjr1XNCwfN6oRYcZf0B6G9Xr4GWGSl2HUxuOTYhRsdQQ6clQecvmUeJUNw/exec';
 
             /* --- AUDIO REMOVED --- */
             function playSound(type) {
@@ -1384,10 +1493,21 @@
             document.addEventListener('DOMContentLoaded', () => {
                 renderCategoryCards();
 
-                // Begin Button
-                document.getElementById('btn-begin').addEventListener('click', () => {
+                document.getElementById('welcome-form').addEventListener('submit', event => {
+                    event.preventDefault();
+                    const input = document.getElementById('participant-name');
+                    participantName = input.value.trim();
+                    if (!participantName) {
+                        input.setCustomValidity('Please enter your name.');
+                        input.reportValidity();
+                        return;
+                    }
+                    input.setCustomValidity('');
                     playSound('click');
                     showScreen('screen-categories');
+                });
+                document.getElementById('participant-name').addEventListener('input', event => {
+                    event.target.setCustomValidity('');
                 });
 
                 // Submit Answer Button
@@ -1395,14 +1515,11 @@
                     handleAnswerSubmission();
                 });
 
-                // Completion Navigation Buttons
-                document.getElementById('btn-other-specialty').addEventListener('click', () => {
-                    playSound('click');
-                    showScreen('screen-categories');
-                });
-
                 document.getElementById('btn-restart').addEventListener('click', () => {
                     playSound('click');
+                    clearTimeout(answerTimer);
+                    participantName = '';
+                    document.getElementById('participant-name').value = '';
                     showScreen('screen-welcome');
                 });
             });
@@ -1453,7 +1570,10 @@
 
             /* --- LOAD QUESTION --- */
             function loadQuestion(index) {
+                clearTimeout(answerTimer);
                 currentQuestionIndex = index;
+                answerLocked = false;
+                nextReady = false;
                 const qData = selectedSpecialty.questions[index];
 
                 // Progress Header
@@ -1468,11 +1588,13 @@
                 // Render Options
                 const optionsContainer = document.getElementById('options-container');
                 optionsContainer.innerHTML = '';
+                document.getElementById('answer-feedback').textContent = '';
 
                 const letters = ['A', 'B', 'C', 'D'];
                 qData.options.forEach((optText, optIdx) => {
                     const btn = document.createElement('button');
                     btn.className = 'option-btn';
+                    btn.type = 'button';
                     btn.onclick = () => selectOption(optIdx);
 
                     btn.innerHTML = `
@@ -1485,8 +1607,9 @@
                 // Reset Next/Submit button state
                 const submitBtn = document.getElementById('btn-submit-answer');
                 submitBtn.classList.remove('active');
+                submitBtn.disabled = true;
                 submitBtn.innerHTML = `
-                ${index === questionCount - 1 ? 'Finish Challenge' : 'Submit Answer'}
+                ${index === questionCount - 1 ? 'Finish Quiz' : 'Next Question'}
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                     <polyline points="12 5 19 12 12 19"></polyline>
@@ -1496,23 +1619,38 @@
 
             /* --- SELECT OPTION --- */
             function selectOption(optionIndex) {
+                if (answerLocked) return;
+                answerLocked = true;
                 playSound('select');
+                const qData = selectedSpecialty.questions[currentQuestionIndex];
+                const isCorrect = optionIndex === qData.correctIndex;
                 const options = document.querySelectorAll('.option-btn');
                 options.forEach((btn, idx) => {
-                    if (idx === optionIndex) {
-                        btn.classList.add('selected');
-                    } else {
-                        btn.classList.remove('selected');
-                    }
+                    btn.disabled = true;
+                    if (idx === qData.correctIndex) btn.classList.add('correct');
+                    if (idx === optionIndex && !isCorrect) btn.classList.add('incorrect');
                 });
 
                 userAnswers[currentQuestionIndex] = optionIndex;
-                document.getElementById('btn-submit-answer').classList.add('active');
+                document.getElementById('answer-feedback').textContent = isCorrect
+                    ? 'Correct!'
+                    : `Incorrect. Correct answer: ${qData.options[qData.correctIndex]}`;
+                if (isCorrect) launchConfetti();
+
+                answerTimer = setTimeout(() => {
+                    nextReady = true;
+                    const nextButton = document.getElementById('btn-submit-answer');
+                    nextButton.disabled = false;
+                    nextButton.classList.add('active');
+                }, 3000);
             }
 
-            /* --- HANDLE SUBMISSION --- */
+            /* --- ADVANCE AFTER THE ANSWER HAS BEEN SHOWN --- */
             function handleAnswerSubmission() {
-                if (userAnswers[currentQuestionIndex] === undefined) return;
+                if (!nextReady || userAnswers[currentQuestionIndex] === undefined) return;
+                nextReady = false;
+                document.getElementById('btn-submit-answer').disabled = true;
+                document.getElementById('btn-submit-answer').classList.remove('active');
 
                 playSound('click');
                 if (currentQuestionIndex < selectedSpecialty.questions.length - 1) {
@@ -1523,7 +1661,24 @@
                 }
             }
 
-            /* --- COMPLETION & EXPLANATIONS SCREEN --- */
+            function launchConfetti() {
+                if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+                const layer = document.getElementById('confetti-layer');
+                const colors = ['#ec4899', '#8b5cf6', '#3b82f6', '#fbbf24', '#34d399'];
+                for (let i = 0; i < 70; i++) {
+                    const piece = document.createElement('span');
+                    piece.className = 'confetti-piece';
+                    piece.style.left = `${Math.random() * 100}%`;
+                    piece.style.backgroundColor = colors[i % colors.length];
+                    piece.style.animationDelay = `${Math.random() * 0.35}s`;
+                    piece.style.setProperty('--drift', `${Math.random() * 260 - 130}px`);
+                    piece.style.setProperty('--spin', `${Math.random() * 900 - 450}deg`);
+                    layer.appendChild(piece);
+                    setTimeout(() => piece.remove(), 3200);
+                }
+            }
+
+            /* --- COMPLETION SCREEN & SCORE SUBMISSION --- */
             function renderCompletionScreen() {
                 playSound('complete');
                 let correctCount = 0;
@@ -1533,63 +1688,28 @@
                     }
                 });
 
-                // Score Banner
-                document.getElementById('score-badge').innerHTML = `
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                </svg>
-                Score: ${correctCount} / ${selectedSpecialty.questions.length} Correct
-            `;
-
-                const tabs = document.getElementById('explanation-tabs');
-                tabs.innerHTML = '';
-                selectedSpecialty.questions.forEach((q, index) => {
-                    const tab = document.createElement('button');
-                    tab.className = 'tab-btn';
-                    tab.textContent = `Question ${index + 1}`;
-                    tab.addEventListener('click', () => switchExplanationTab(index));
-                    tabs.appendChild(tab);
-                });
-                switchExplanationTab(0);
+                const total = selectedSpecialty.questions.length;
+                document.getElementById('score-badge').textContent =
+                    `You collected ${correctCount} of ${total} correct answers (${correctCount}/${total})`;
+                saveScore(correctCount, total);
             }
 
-            /* --- EXPLANATION TAB SWITCHING --- */
-            function switchExplanationTab(tabIdx) {
-                playSound('click');
-                currentExplanationTab = tabIdx;
-
-                document.querySelectorAll('#explanation-tabs .tab-btn').forEach((tab, index) => {
-                    tab.classList.toggle('active', index === tabIdx);
-                });
-
-                const qData = selectedSpecialty.questions[tabIdx];
-                const userChoiceIdx = userAnswers[tabIdx];
-                const isCorrect = userChoiceIdx === qData.correctIndex;
-                const letters = ['A', 'B', 'C', 'D'];
-
-                const expCard = document.getElementById('explanation-content-card');
-                expCard.innerHTML = `
-                <div class="exp-question-title">
-                    Question ${tabIdx + 1}: ${qData.question}
-                </div>
-
-                <div>
-                    <div class="answer-status-pill ${isCorrect ? 'correct' : 'incorrect'}">
-                        ${isCorrect ?
-                        `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg> Correct! You chose (${letters[userChoiceIdx]}) ${qData.options[userChoiceIdx]}` :
-                        `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Incorrect: You selected (${letters[userChoiceIdx]}) ${qData.options[userChoiceIdx]}`
-                    }
-                    </div>
-                </div>
-
-                ${!isCorrect ? `
-                    <div style="font-size: 0.95rem; font-weight: 700; color: #34d399; display: flex; align-items: center; gap: 0.5rem;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Correct Answer: (${letters[qData.correctIndex]}) ${qData.options[qData.correctIndex]}
-                    </div>
-                ` : ''}
-
-            `;
+            function saveScore(correctCount, total) {
+                if (!SCORE_ENDPOINT) return;
+                const payload = {
+                    name: participantName,
+                    selectedQuiz: selectedSpecialty.title,
+                    correct: correctCount,
+                    total
+                };
+                // text/plain keeps this cross-origin request compatible with Apps Script web apps.
+                fetch(SCORE_ENDPOINT, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload),
+                    keepalive: true
+                }).catch(error => console.error('Could not send quiz score:', error));
             }
         </script>
 </body>
