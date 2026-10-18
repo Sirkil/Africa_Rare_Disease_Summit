@@ -1,422 +1,158 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Africa Rare Diseases Summit - QR Code Scanner</title>
-    <!-- Google Font Fallback (Poppins) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/html5-qrcode"></script>
-    <style>
-        /* --- SANOFI BRAND FONT DECLARATION --- */
-        @font-face {
-            font-family: 'Sanofi';
-            src: local('Sanofi'), local('Sanofi Sans'), local('Sanofi-Regular');
-            font-weight: 400;
-        }
-        @font-face {
-            font-family: 'Sanofi';
-            src: local('Sanofi Bold'), local('Sanofi-Bold');
-            font-weight: 700;
-        }
-
-        * {
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        html,
-        body {
-            margin: 0;
-            padding: 0;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-            background-color: #0b021a;
-            font-family: 'Sanofi', 'Sanofi Sans', 'Poppins', sans-serif;
-            color: white;
-            position: relative;
-        }
-
-        /* Full Screen Reader Container */
-        #reader {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100vw !important;
-            height: 100vh !important;
-            border: none !important;
-            z-index: 1;
-            overflow: hidden;
-            background: #0b021a;
-        }
-
-        #reader video {
-            object-fit: cover !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
-
-        /* Reticle Viewfinder Overlay */
-        .reticle-container {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 75vw;
-            height: 75vw;
-            max-width: 480px;
-            max-height: 480px;
-            z-index: 5;
-            pointer-events: none;
-            box-shadow: 0 0 0 4000px rgba(11, 2, 26, 0.65);
-            border-radius: 28px;
-        }
-
-        .reticle-corner {
-            position: absolute;
-            width: 42px;
-            height: 42px;
-            border-color: #9c27b0;
-            border-style: solid;
-            border-width: 0;
-            filter: drop-shadow(0 0 8px #00e5ff);
-        }
-
-        .top-left {
-            top: -2px;
-            left: -2px;
-            border-top-width: 5px;
-            border-left-width: 5px;
-            border-top-left-radius: 28px;
-        }
-
-        .top-right {
-            top: -2px;
-            right: -2px;
-            border-top-width: 5px;
-            border-right-width: 5px;
-            border-top-right-radius: 28px;
-        }
-
-        .bottom-left {
-            bottom: -2px;
-            left: -2px;
-            border-bottom-width: 5px;
-            border-left-width: 5px;
-            border-bottom-left-radius: 28px;
-        }
-
-        .bottom-right {
-            bottom: -2px;
-            right: -2px;
-            border-bottom-width: 5px;
-            border-right-width: 5px;
-            border-bottom-right-radius: 28px;
-        }
-
-        .scan-line {
-            position: absolute;
-            top: 0;
-            left: 2%;
-            width: 96%;
-            height: 3px;
-            background: linear-gradient(90deg, transparent, #00e5ff, #9c27b0, transparent);
-            box-shadow: 0 0 15px #00e5ff;
-            animation: scanAnim 2.5s infinite ease-in-out;
-            border-radius: 3px;
-        }
-
-        @keyframes scanAnim {
-            0% { top: 2%; opacity: 0.8; }
-            50% { top: 96%; opacity: 1; }
-            100% { top: 2%; opacity: 0.8; }
-        }
-
-        /* Floating Header Bar */
-        .scanner-header {
-            position: absolute;
-            top: max(20px, env(safe-area-inset-top));
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10;
-            background: rgba(18, 5, 38, 0.85);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            padding: 10px 24px;
-            border-radius: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            color: #ffffff;
-            font-weight: 600;
-            font-size: 15px;
-            letter-spacing: 0.5px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            white-space: nowrap;
-        }
-
-        .scanner-header img {
-            height: 22px;
-            width: auto;
-        }
-
-        .scanner-header .dot {
-            width: 9px;
-            height: 9px;
-            background-color: #22c55e;
-            border-radius: 50%;
-            box-shadow: 0 0 10px #22c55e;
-            animation: blink 1.5s infinite;
-        }
-
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
-
-        /* Floating Status Log at Bottom */
-        .log {
-            position: absolute;
-            bottom: max(30px, env(safe-area-inset-bottom));
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10;
-            width: calc(100% - 40px);
-            max-width: 500px;
-            background: rgba(26, 7, 54, 0.92);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            color: white;
-            border-radius: 20px;
-            padding: 18px 24px;
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
-            text-align: center;
-            font-weight: 500;
-            font-size: 15px;
-            line-height: 1.4;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(156, 39, 176, 0.3);
-        }
-
-        .log.cooldown {
-            background: rgba(46, 125, 50, 0.95);
-            border-color: rgba(34, 197, 94, 0.5);
-            box-shadow: 0 12px 35px rgba(34, 197, 94, 0.4);
-        }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Summit QR Scanner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="../assets/jsQR.js"></script>
+  <script src="SummitApi.js?v=4"></script>
+  <style>
+    *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0b021a;color:white;font-family:Poppins,sans-serif}
+    #reader,#reader video{position:absolute!important;inset:0;width:100%!important;height:100%!important;object-fit:cover!important;border:0!important}
+    .reticle{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:min(92vw,88vh,680px);aspect-ratio:1;border:3px solid #b687ff;border-radius:24px;box-shadow:0 0 18px #7737d7,inset 0 0 18px #7737d7;pointer-events:none}
+    .reticle:after{content:"";position:absolute;left:7%;right:7%;top:10%;height:2px;background:#5af8e6;box-shadow:0 0 12px #5af8e6;animation:sweep 2.6s ease-in-out infinite alternate}@keyframes sweep{to{top:90%}}
+    .header,.status{position:absolute;left:50%;transform:translateX(-50%);z-index:4;background:rgba(13,4,37,.87);border:1px solid rgba(181,143,255,.38);box-shadow:0 12px 36px rgba(0,0,0,.4);backdrop-filter:blur(14px);text-align:center}
+    .header{top:max(12px,env(safe-area-inset-top));border-radius:20px;padding:8px 16px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;font-weight:600;letter-spacing:.16em}
+    .header img{display:block;height:clamp(66px,11vh,110px);width:auto;max-width:78vw;object-fit:contain}
+    .status{bottom:max(24px,env(safe-area-inset-bottom));border-radius:18px;padding:18px 22px;width:calc(100% - 32px);max-width:520px;font-size:15px;line-height:1.5}
+    .status.ok{border-color:#62dcbc}.status.error{border-color:#ff8da0}
+  </style>
 </head>
-
 <body>
+  <div id="reader"></div><div class="reticle"></div>
+  <div class="header"><img src="../assets/africa_logo_v2.png" alt="Africa Rare Disease Summit"><span>QR SCANNER</span></div>
+  <div class="status" id="status" role="status">Connecting to registration sheet…</div>
+  <script>
+    const statusEl = document.getElementById('status');
+    let cursor = 0;
+    let busy = false;
+    let recentText = '';
+    let recentAt = 0;
+    let sheetReady = false;
+    let scannerVideo = null;
+    let scanTimer = null;
+    let scanPass = 0;
+    const scanCanvas = document.createElement('canvas');
+    const scanContext = scanCanvas.getContext('2d', {willReadFrequently:true});
 
-    <!-- Floating Top Header Bar -->
-    <div class="scanner-header">
-        <img src="../assets/africa_logo_v2.png" alt="Summit Logo">
-        <span class="dot" id="indicator-dot"></span>
-        <span id="header-text">Scan Member QR Code</span>
-    </div>
+    function status(message, kind = '') {
+      statusEl.textContent = message;
+      statusEl.className = 'status ' + kind;
+    }
+    const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-    <!-- Center Reticle Frame -->
-    <div class="reticle-container">
-        <div class="reticle-corner top-left"></div>
-        <div class="reticle-corner top-right"></div>
-        <div class="reticle-corner bottom-left"></div>
-        <div class="reticle-corner bottom-right"></div>
-        <div class="scan-line"></div>
-    </div>
-
-    <!-- Camera Reader container -->
-    <div id="reader"></div>
-
-    <!-- Status Log Overlay -->
-    <div class="log" id="status-log">Camera initializing...</div>
-
-    <script>
-        let lastScannedPayload = "";
-        let isCooldown = false;
-        let countdownTimer = null;
-        const statusLog = document.getElementById('status-log');
-        const indicatorDot = document.getElementById('indicator-dot');
-        const headerText = document.getElementById('header-text');
-        
-        // Setup BroadcastChannels
-        const bc = window.BroadcastChannel ? new BroadcastChannel('africa_summit_registration') : null;
-        const legacyBc = window.BroadcastChannel ? new BroadcastChannel('talabat_registration') : null;
-
-        // Only the first two QR fields are used: name and country.
-        function parseQrPayload(rawText) {
-            let name = "";
-            let country = "";
-
-            if (!rawText) return { name: "", country: "" };
-
-            const trimmed = rawText.trim();
-
-            // 1. URL key-value params (e.g. name=Dr.+Amina+Khaled&country=Egypt)
-            if (trimmed.includes('name=') || trimmed.includes('country=') || trimmed.includes('&') || trimmed.includes('?')) {
-                try {
-                    let q = trimmed;
-                    if (q.includes('?')) q = q.split('?')[1];
-                    const params = new URLSearchParams(q);
-                    name = params.get('name') || params.get('memberName') || params.get('guestName') || "";
-                    country = params.get('country') || params.get('memberCountry') || "";
-                    if (name) return { name, country };
-                } catch(e) {}
-            }
-
-            // 2. Try parsing JSON
-            try {
-                const data = JSON.parse(trimmed);
-                name = data.name || data.memberName || data.guestName || "";
-                country = data.country || data.memberCountry || "";
-                if (name) return { name, country };
-            } catch(e) {}
-
-            // 3. Pipe format: "Name|Country|Anything else" (ignore the rest)
-            if (trimmed.includes('|')) {
-                const parts = trimmed.split('|');
-                name = parts[0].trim();
-                country = (parts[1] || "").trim();
-                return { name, country };
-            }
-
-            // 4. Try parsing Comma delimiter e.g. "Dr. Amina Khaled, Egypt"
-            if (trimmed.includes(',')) {
-                const parts = trimmed.split(',');
-                name = parts[0].trim();
-                country = (parts[1] || "").trim();
-                return { name, country };
-            }
-
-            // 5. Fallback: plain string as name
-            return { name: trimmed, country: "" };
+    async function onScan(raw) {
+      if (busy || (raw === recentText && Date.now() - recentAt < 10000)) return;
+      const guest = SummitApi.parseQr(raw);
+      if (!guest) { status('This QR code has no valid name.', 'error'); return; }
+      busy = true;
+      const requestId = (crypto.randomUUID ? crypto.randomUUID() : Date.now() + '-' + Math.random());
+      try {
+        if (!sheetReady) {
+          status('Connecting to the registration sheet…');
+          cursor = (await SummitApi.events(0)).latestCursor;
+          sheetReady = true;
         }
-
-        function onScanSuccess(decodedText, decodedResult) {
-            if (isCooldown) return;
-            if (decodedText === lastScannedPayload) return;
-
-            isCooldown = true;
-            lastScannedPayload = decodedText;
-            statusLog.classList.add('cooldown');
-
-            // Parse guest data
-            const memberInfo = parseQrPayload(decodedText);
-            const guestData = {
-                name: memberInfo.name,
-                country: memberInfo.country,
-                timestamp: Date.now()
-            };
-
-            // Update UI indicators
-            indicatorDot.style.backgroundColor = "#9c27b0";
-            indicatorDot.style.boxShadow = "0 0 10px #9c27b0";
-            headerText.innerText = "Processing...";
-
-            // 1. Broadcast to Registration Display Screen via LocalStorage & BroadcastChannel
-            localStorage.setItem('latestGuest', JSON.stringify(guestData));
-
-            try {
-                let existing = JSON.parse(localStorage.getItem('allGuests') || '[]');
-                existing.push(guestData);
-                localStorage.setItem('allGuests', JSON.stringify(existing));
-            } catch (e) { }
-
-            if (bc) bc.postMessage(guestData);
-            if (legacyBc) legacyBc.postMessage(guestData);
-
-            // 2. Countdown timer before resetting scanner lock
-            let secondsLeft = 5;
-            updateStatusText(memberInfo, secondsLeft);
-
-            clearInterval(countdownTimer);
-            countdownTimer = setInterval(() => {
-                secondsLeft--;
-                if (secondsLeft > 0) {
-                    updateStatusText(memberInfo, secondsLeft);
-                } else {
-                    clearInterval(countdownTimer);
-                    restartScanner();
-                }
-            }, 1000);
+        status('Saving ' + guest.name + '…');
+        await SummitApi.submit({...guest, requestId});
+        const deadline = Date.now() + 25000;
+        let resent = false;
+        while (Date.now() < deadline) {
+          await pause(1100);
+          const batch = await SummitApi.events(cursor);
+          cursor = batch.cursor;
+          if (batch.events.some(event => event.requestId === requestId)) {
+            recentText = raw;
+            recentAt = Date.now();
+            status('✓ ' + guest.name + ' is on the registration screen.', 'ok');
+            await pause(2500);
+            status('Ready for the next QR code.');
+            return;
+          }
+          if (!resent && Date.now() > deadline - 16000) {
+            resent = true;
+            await SummitApi.submit({...guest, requestId});
+          }
         }
+        status('Could not confirm this scan. Check the sheet connection and scan again.', 'error');
+      } catch (error) {
+        sheetReady = false;
+        status(error.message || 'Sheet connection failed.', 'error');
+      } finally {
+        busy = false;
+      }
+    }
 
-        function updateStatusText(memberInfo, seconds) {
-            const displayName = memberInfo.name || "Member";
-            const displayCountry = memberInfo.country ? ` (${memberInfo.country})` : "";
-            statusLog.replaceChildren();
-            const summary = document.createElement('strong');
-            summary.textContent = `✅ Scanned: ${displayName}${displayCountry}`;
-            const countdown = document.createElement('span');
-            countdown.style.cssText = 'font-size: 13px; opacity: 0.9;';
-            countdown.textContent = `Ready for next scan in ${seconds}s...`;
-            statusLog.append(summary, document.createElement('br'), countdown);
+    function decodeFrame() {
+      const pixels = scanContext.getImageData(0, 0, scanCanvas.width, scanCanvas.height);
+      return jsQR(pixels.data, pixels.width, pixels.height, {inversionAttempts:'dontInvert'})?.data || null;
+    }
+
+    function scanFrame() {
+      if (!scannerVideo) return;
+      if (!busy && scannerVideo.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA && scannerVideo.videoWidth) {
+        const sourceWidth = scannerVideo.videoWidth;
+        const sourceHeight = scannerVideo.videoHeight;
+        const scale = Math.min(1, 960 / Math.max(sourceWidth, sourceHeight));
+        scanCanvas.width = Math.round(sourceWidth * scale);
+        scanCanvas.height = Math.round(sourceHeight * scale);
+        scanContext.drawImage(scannerVideo, 0, 0, scanCanvas.width, scanCanvas.height);
+        let decoded = decodeFrame();
+        if (!decoded) {
+          // Reframe tightly cropped printed codes with a digital white margin.
+          const fraction = scanPass++ % 2 === 0 ? 1 : 0.72;
+          const side = Math.min(sourceWidth, sourceHeight) * fraction;
+          const inset = 48;
+          const contentSize = 640;
+          scanCanvas.width = contentSize + inset * 2;
+          scanCanvas.height = contentSize + inset * 2;
+          scanContext.fillStyle = '#fff';
+          scanContext.fillRect(0, 0, scanCanvas.width, scanCanvas.height);
+          scanContext.drawImage(scannerVideo,
+            (sourceWidth - side) / 2, (sourceHeight - side) / 2, side, side,
+            inset, inset, contentSize, contentSize);
+          decoded = decodeFrame();
         }
+        if (decoded) onScan(decoded);
+      }
+      scanTimer = setTimeout(scanFrame, 300);
+    }
 
-        function restartScanner() {
-            statusLog.classList.remove('cooldown');
-            statusLog.innerText = "Waiting for scan...";
-            indicatorDot.style.backgroundColor = "#22c55e";
-            indicatorDot.style.boxShadow = "0 0 10px #22c55e";
-            headerText.innerText = "Scan Member QR Code";
-            isCooldown = false;
-            lastScannedPayload = "";
-        }
-
-        function onScanFailure(error) {
-            // Quiet frame scan retry
-        }
-
-        function playSuccessBeep() {
-            try {
-                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = "sine";
-                osc.frequency.setValueAtTime(880, audioCtx.currentTime);
-                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.15);
-            } catch (e) { }
-        }
-
-        // Initialize Camera
-        const html5QrCode = new Html5Qrcode("reader");
-
-        html5QrCode.start(
-            { facingMode: "environment" },
-            {
-                fps: 20,
-                useBarCodeDetectorIfSupported: true,
-                videoConstraints: {
-                    width: { ideal: 1920 },
-                    height: { ideal: 1080 },
-                    advanced: [{ focusMode: "continuous" }]
-                }
-            },
-            (decodedText, decodedResult) => {
-                playSuccessBeep();
-                onScanSuccess(decodedText, decodedResult);
-            },
-            onScanFailure
-        ).then(() => {
-            statusLog.innerText = "Waiting for scan...";
-        }).catch((err) => {
-            console.error("Camera access error:", err);
-            statusLog.innerText = "Camera access denied or unavailable.";
+    async function start() {
+      if (!SummitApi.configured()) {
+        status('Set the Apps Script /exec URL in SummitApi.js first.', 'error');
+        return;
+      }
+      try {
+        if (!window.jsQR) throw new Error('QR decoder did not load. Reload the page.');
+        if (!navigator.mediaDevices?.getUserMedia) throw new Error('Camera access requires HTTPS or localhost.');
+        const sheetConnection = SummitApi.events(0).then(batch => {
+          cursor = batch.latestCursor;
+          sheetReady = true;
+          status('Ready — show the full QR with a little white badge area around it.');
+        }).catch(error => {
+          status('Camera ready, but sheet connection failed: ' + (error.message || error), 'error');
         });
-    </script>
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio:false,
+          video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}}
+        });
+        scannerVideo = document.createElement('video');
+        scannerVideo.autoplay = true;
+        scannerVideo.muted = true;
+        scannerVideo.playsInline = true;
+        scannerVideo.srcObject = stream;
+        document.getElementById('reader').replaceChildren(scannerVideo);
+        await scannerVideo.play();
+        scanFrame();
+        await sheetConnection;
+      } catch (error) {
+        status('Camera unavailable: ' + (error.message || error), 'error');
+      }
+    }
+    start();
+  </script>
 </body>
-
 </html>

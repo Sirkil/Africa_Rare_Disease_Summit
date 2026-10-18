@@ -1,388 +1,189 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Africa Rare Diseases Summit - Registration Screen</title>
-    <!-- Google Font Fallback (Poppins / Inter) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap"
-        rel="stylesheet">
-    <style>
-        /* --- SANOFI BRAND FONT DECLARATION --- */
-        @font-face {
-            font-family: 'Sanofi';
-            src: local('Sanofi'), local('Sanofi Sans'), local('Sanofi-Regular');
-            font-weight: 400;
-        }
-
-        @font-face {
-            font-family: 'Sanofi';
-            src: local('Sanofi Bold'), local('Sanofi-Bold');
-            font-weight: 700;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        html,
-        body {
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-            background-color: #0b021a;
-            font-family: 'Sanofi', 'Sanofi Sans', 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
-            color: #ffffff;
-            position: relative;
-        }
-
-        /* --- STAGE BACKGROUND WITH GRADIENT --- */
-        .stage-bg {
-            position: absolute;
-            inset: 0;
-            background: url('../assets/bg.png') no-repeat center center;
-            background-size: cover;
-            z-index: 1;
-        }
-
-        .gradient-vignette {
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(circle at center, rgba(11, 2, 26, 0.1) 0%, rgba(11, 2, 26, 0.75) 100%);
-            z-index: 3;
-            pointer-events: none;
-        }
-
-        /* --- MAIN SCREEN CONTAINER --- */
-        .screen-container {
-            position: relative;
-            z-index: 10;
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 40px;
-            text-align: center;
-        }
-
-        /* --- TOP HEADER LOGO & BRANDING --- */
-        .header-logo {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 4vh;
-            transition: all 0.6s ease;
-        }
-
-        .header-logo img {
-            height: 200px;
-            width: auto;
-            filter: drop-shadow(0 4px 20px rgba(156, 39, 176, 0.5));
-        }
-
-        /* --- PLAIN IDLE STATE (Empty / Plain when waiting) --- */
-        .idle-card {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            opacity: 1;
-            transform: scale(1);
-            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-            min-height: 50px;
-        }
-
-        .idle-card.hidden {
-            opacity: 0;
-            transform: scale(0.95);
-            pointer-events: none;
-            position: absolute;
-        }
-
-        /* --- SCANNED WELCOME CARD (MATCHING STAGE IMAGE) --- */
-        .welcome-card {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transform: translateY(20px) scale(0.96);
-            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-            pointer-events: none;
-        }
-
-        .welcome-card.active {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-            pointer-events: auto;
-        }
-
-        /* Line 1: Welcome to The */
-        .welcome-prefix {
-            font-size: clamp(26px, 3.5vw, 52px);
-            font-weight: 400;
-            color: #ffffff;
-            margin-bottom: 8px;
-            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.7);
-            letter-spacing: -0.5px;
-        }
-
-        /* Line 2: Africa Rare Diseases Summit */
-        .welcome-summit-title {
-            font-size: clamp(36px, 5.5vw, 82px);
-            font-weight: 700;
-            color: #ffffff;
-            margin-bottom: 28px;
-            text-shadow: 0 6px 30px rgba(0, 0, 0, 0.85);
-            letter-spacing: -1px;
-            line-height: 1.1;
-        }
-
-        /* Line 3: Member Name */
-        .member-name {
-            font-size: clamp(30px, 4vw, 60px);
-            font-weight: 500;
-            color: #ffffff;
-            margin-bottom: 22px;
-            text-shadow: 0 4px 25px rgba(0, 0, 0, 0.8);
-            letter-spacing: -0.2px;
-        }
-
-        /* Line 4: Flag & Country */
-        .country-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 16px;
-            margin-top: 10px;
-        }
-
-        .country-flag {
-            width: clamp(50px, 5.5vw, 85px);
-            height: clamp(32px, 3.6vw, 55px);
-            object-fit: contain;
-            border-radius: 4px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.2);
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .country-name {
-            font-size: clamp(26px, 3.5vw, 50px);
-            font-weight: 500;
-            color: #ffffff;
-            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
-        }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Africa Rare Disease Summit · Registration Wall</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="SummitApi.js"></script>
+  <style>
+    *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#080410;color:#fff;font-family:Poppins,Arial,sans-serif}
+    .background-video,.video-fallback,.video-shade{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
+    .video-fallback{background:url('../assets/bg.png') center/cover no-repeat}
+    .background-video{object-fit:cover}
+    .video-shade{background:linear-gradient(90deg,rgba(0,0,0,.45),rgba(18,13,57,.38)),radial-gradient(circle at 50% 50%,transparent,rgba(0,0,0,.25))}
+    .view{position:absolute;inset:0;transition:opacity .65s ease,transform .65s ease}
+    #wall{opacity:1;transform:scale(1)}#wall.hidden{opacity:0;transform:scale(.975);pointer-events:none}
+    #welcome{opacity:0;transform:translateY(18px);pointer-events:none;display:flex;flex-direction:column;align-items:center;text-align:center;padding:4vh 4vw 6vh}
+    #welcome.visible{opacity:1;transform:translateY(0)}
+    .map{position:absolute;left:4.5vw;top:2vh;width:min(69vw,90vh);height:auto;aspect-ratio:10821/11526;max-height:96vh;overflow:visible}
+    .map-name{fill:#fff;font-weight:600;text-anchor:middle;dominant-baseline:middle;paint-order:stroke;stroke:#210b40;stroke-width:3px;stroke-linejoin:round;letter-spacing:.2px}
+    .wall-brand{position:absolute;right:5vw;top:6vh}
+    .wall-brand img{display:block;width:clamp(230px,23vw,420px);height:auto}
+    .welcome-brand{margin:0 auto 5vh}
+    .welcome-brand img{display:block;width:clamp(280px,26vw,450px);height:auto}
+    .prefix{font-size:clamp(23px,2.5vw,42px);font-weight:400;letter-spacing:.38em;text-transform:uppercase;text-shadow:0 0 16px #7339d9}
+    .summit-title{font-size:clamp(34px,4vw,72px);font-weight:700;line-height:1.15;text-transform:uppercase;white-space:nowrap;margin:1.5vh 0 5vh;text-shadow:0 0 23px #8c47d9,0 0 45px #58219d}
+    .flag-wrap{height:clamp(70px,12vh,130px);display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:3vh}
+    .flag-wrap:before,.flag-wrap:after{content:"";height:1px;width:min(16vw,220px);background:linear-gradient(90deg,transparent,#bba5d9)}
+    .flag-wrap:after{transform:rotate(180deg)}
+    #flag{display:block;height:clamp(70px,10vh,110px);width:auto;max-width:190px;object-fit:contain;filter:drop-shadow(0 0 15px #7445ed)}
+    #flag[hidden]{display:none}
+    #country-label{font-size:clamp(24px,2.8vw,44px)}
+    #guest-name{font-size:clamp(44px,5.2vw,88px);font-weight:600;text-transform:uppercase;line-height:1.1;max-width:94vw;text-shadow:0 0 20px #753dd8,0 0 40px #512195}
+    #guest-role{font-family:Georgia,serif;font-size:clamp(28px,3vw,52px);font-weight:400;font-style:italic;margin-top:4vh;text-shadow:0 0 15px #7135c4}
+    #connection{position:absolute;right:18px;bottom:14px;font-size:12px;color:#ffbac7;background:rgba(0,0,0,.55);border-radius:8px;padding:7px 10px;display:none}
+    @media(max-aspect-ratio:1/1){.map{width:94vw;left:3vw;top:15vh}.wall-brand{left:50%;right:auto;top:2vh;transform:translateX(-50%)}.summit-title{white-space:normal}.welcome-brand{margin-bottom:5vh}.flag-wrap{margin-bottom:2vh}}
+  </style>
 </head>
-
 <body>
+  <div class="video-fallback"></div>
+  <video class="background-video" autoplay muted loop playsinline preload="auto" poster="../assets/bg.png"><source src="../assets/BG_Screen.mp4" type="video/mp4"></video>
+  <div class="video-shade"></div>
 
-    <!-- Background Stage layers -->
-    <div class="stage-bg"></div>
-    <div class="gradient-vignette"></div>
+  <section class="view" id="wall" aria-label="Attendees in Africa silhouette">
+    <svg class="map" viewBox="0 0 1000 1000" preserveAspectRatio="none" role="img" aria-label="Africa silhouette filled with attendee names">
+      <defs><clipPath id="map-clip"><polygon id="clip-polygon" points="231,48 189,76 162,117 111,150 60,210 40,336 96,407 145,440 312,422 397,460 397,528 435,575 459,650 438,742 488,867 537,960 614,952 661,916 728,831 741,766 808,717 803,563 846,509 919,450 959,373 870,381 803,319 718,182 714,127 700,114 624,114 564,98 537,121 499,120 419,83 412,44 399,35"/></clipPath></defs>
+      <image href="../assets/Africa_Silhouette.png" x="0" y="0" width="1000" height="1000" preserveAspectRatio="none"/>
+      <g id="names-layer" clip-path="url(#map-clip)"></g>
+    </svg>
+    <div class="wall-brand"><img src="../assets/africa_logo_v2.png" alt="Africa Rare Disease Summit"></div>
+  </section>
 
-    <div class="screen-container">
+  <section class="view" id="welcome" aria-live="polite">
+    <div class="welcome-brand"><img src="../assets/africa_logo_v2.png" alt="Africa Rare Disease Summit"></div>
+    <div class="prefix">Welcome to the</div>
+    <div class="summit-title">Africa Rare Disease Summit</div>
+    <div class="flag-wrap"><img id="flag" alt=""><span id="country-label"></span></div>
+    <div id="guest-name"></div>
+    <div id="guest-role"></div>
+  </section>
+  <div id="connection" role="status"></div>
 
-        <!-- Header Branding (Clean 200px Summit Logo) -->
-        <div class="header-logo">
-            <img src="../assets/africa_logo_v2.png" alt="Africa Rare Diseases Summit Logo" id="logo-img">
-        </div>
+  <script>
+    const wall = document.getElementById('wall');
+    const welcome = document.getElementById('welcome');
+    const layer = document.getElementById('names-layer');
+    const connection = document.getElementById('connection');
+    const polygon = document.getElementById('clip-polygon').getAttribute('points').split(' ').map(pair => pair.split(',').map(Number));
+    const flags = {'algeria':'Algeria.png','argentina':'Argentine.png','argentine':'Argentine.png','egypt':'Egypt.png','libya':'Libya.png','morocco':'Morocco.png','south africa':'South_Africa.png','tunisia':'Tunisia.png','uk':'UK.png','united kingdom':'UK.png','us':'US.png','usa':'US.png','united states':'US.png','united states of america':'US.png'};
+    const guests = [];
+    const seen = new Set();
+    const queue = [];
+    let cursor = 0;
+    let presenting = false;
+    let polling = false;
+    const measure = document.createElement('canvas').getContext('2d');
 
-        <!-- PLAIN / IDLE STATE (Clean plain screen when waiting for scan) -->
-        <div class="idle-card" id="idle-card">
-            <!-- Plain state: displays logo & stage background -->
-        </div>
-
-        <!-- WELCOME SCANNED MEMBER STATE (Displays on QR code scan) -->
-        <div class="welcome-card" id="welcome-card">
-            <div class="welcome-prefix">Welcome to The</div>
-            <div class="welcome-summit-title">Africa Rare Diseases Summit</div>
-            <div class="member-name" id="member-name">Dr. Amina Khaled</div>
-            <div class="country-container" id="country-container">
-                <img id="country-flag-img" class="country-flag" alt="" style="display: none;">
-                <span class="country-name" id="country-name">Egypt</span>
-            </div>
-        </div>
-
-    </div>
-
-    <script>
-        const idleCard = document.getElementById('idle-card');
-        const welcomeCard = document.getElementById('welcome-card');
-        const memberNameEl = document.getElementById('member-name');
-        const countryNameEl = document.getElementById('country-name');
-        const countryFlagImg = document.getElementById('country-flag-img');
-        const countryContainer = document.getElementById('country-container');
-
-        let hideTimeout;
-
-        // Match scanned country names to the PNG files in the shared assets folder.
-        const countryFlags = {
-            'algeria': 'Algeria.png',
-            'argentine': 'Argentine.png',
-            'argentina': 'Argentine.png',
-            'egypt': 'Egypt.png',
-            'libya': 'Libya.png',
-            'morocco': 'Morocco.png',
-            'south africa': 'South_Africa.png',
-            'tunisia': 'Tunisia.png',
-            'uk': 'UK.png',
-            'united kingdom': 'UK.png',
-            'us': 'US.png',
-            'usa': 'US.png',
-            'united states': 'US.png'
-        };
-
-        // Read only the name and country from scanner messages or QR text.
-        function parsePayload(payload) {
-            let name = "";
-            let country = "";
-
-            if (typeof payload === 'object' && payload !== null) {
-                name = payload.name || payload.memberName || "";
-                country = payload.country || payload.memberCountry || "";
-                if (name) return { name, country };
-            }
-
-            if (typeof payload === 'string') {
-                const trimmed = payload.trim();
-
-                // 1. URL key-value params (e.g. name=Dr.+Amina+Khaled&country=Egypt or https://.../?name=...&country=...)
-                if (trimmed.includes('name=') || trimmed.includes('country=') || trimmed.includes('&') || trimmed.includes('?')) {
-                    try {
-                        let q = trimmed;
-                        if (q.includes('?')) q = q.split('?')[1];
-                        const params = new URLSearchParams(q);
-                        name = params.get('name') || params.get('memberName') || params.get('guestName') || "";
-                        country = params.get('country') || params.get('memberCountry') || "";
-                        if (name) return { name, country };
-                    } catch (e) { }
-                }
-
-                // 2. Try JSON
-                try {
-                    const parsed = JSON.parse(trimmed);
-                    name = parsed.name || parsed.memberName || "";
-                    country = parsed.country || "";
-                    if (name) return { name, country };
-                } catch (e) { }
-
-                // 3. Delimited formats (Pipe or Comma)
-                if (trimmed.includes('|')) {
-                    const parts = trimmed.split('|');
-                    name = parts[0].trim();
-                    country = (parts[1] || "").trim();
-                    return { name, country };
-                } else if (trimmed.includes(',')) {
-                    const parts = trimmed.split(',');
-                    name = parts[0].trim();
-                    country = (parts[1] || "").trim();
-                    return { name, country };
-                }
-
-                // 4. Plain name string
-                name = trimmed;
-            }
-
-            return { name, country };
-        }
-
-        // Listen for scanner updates via BroadcastChannel
-        const channelName = 'africa_summit_registration';
-        const bc = window.BroadcastChannel ? new BroadcastChannel(channelName) : null;
-
-        if (bc) {
-            bc.onmessage = (event) => {
-                if (event.data) {
-                    handleScanPayload(event.data);
-                }
-            };
-        }
-
-        // Listen for legacy channel as fallback
-        if (window.BroadcastChannel) {
-            const legacyBc = new BroadcastChannel('talabat_registration');
-            legacyBc.onmessage = (event) => {
-                if (event.data) {
-                    handleScanPayload(event.data);
-                }
-            };
-        }
-
-        // Listen for storage events (across tabs/windows)
-        window.addEventListener('storage', (event) => {
-            if (event.key === 'latestGuest') {
-                try {
-                    const data = JSON.parse(event.newValue);
-                    if (data) {
-                        handleScanPayload(data);
-                    }
-                } catch (e) { }
-            }
-        });
-
-        function handleScanPayload(payload) {
-            const parsed = parsePayload(payload);
-            if (parsed.name) {
-                showWelcome(parsed.name, parsed.country);
-            }
-        }
-
-        function showWelcome(name, country) {
-            clearTimeout(hideTimeout);
-
-            // Update Member Name
-            memberNameEl.innerText = name;
-
-            // Handle Country & Flag
-            if (country) {
-                countryContainer.style.display = 'flex';
-                countryNameEl.textContent = country;
-
-                const flagFile = countryFlags[country.toLowerCase().trim()];
-                if (flagFile) {
-                    countryFlagImg.alt = `${country} flag`;
-                    countryFlagImg.onerror = () => {
-                        countryFlagImg.style.display = 'none';
-                    };
-                    countryFlagImg.src = `../assets/${flagFile}`;
-                    countryFlagImg.style.display = 'block';
-                } else {
-                    countryFlagImg.style.display = 'none';
-                    countryFlagImg.removeAttribute('src');
-                }
-            } else {
-                countryContainer.style.display = 'none';
-            }
-
-            // Transition from Plain Idle -> Scanned Welcome State
-            idleCard.classList.add('hidden');
-            welcomeCard.classList.add('active');
-
-            // Return to Plain Idle State after 8 seconds
-            hideTimeout = setTimeout(() => {
-                resetToPlain();
-            }, 8000);
-        }
-
-        function resetToPlain() {
-            clearTimeout(hideTimeout);
-            welcomeCard.classList.remove('active');
-            idleCard.classList.remove('hidden');
-        }
-
-        function testScan(rawText) {
-            handleScanPayload(rawText);
-        }
-    </script>
+    function inside(x, y) {
+      let hit = false;
+      for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+        const a = polygon[i], b = polygon[j];
+        if ((a[1] > y) !== (b[1] > y) && x < (b[0]-a[0]) * (y-a[1]) / (b[1]-a[1]) + a[0]) hit = !hit;
+      }
+      return hit;
+    }
+    function fits(x,y,width,height) {
+      const left=x-width/2-12,right=x+width/2+12,top=y-height/2-7,bottom=y+height/2+7;
+      return [left,x,right].every(px => [top,y,bottom].every(py => inside(px,py)));
+    }
+    function layout(size) {
+      measure.font = '600 ' + size + 'px Poppins';
+      const placed = [];
+      const positions = [];
+      const candidates = [];
+      for (let y=135;y<=885;y+=Math.max(22,size*1.35)) {
+        for (let x=95;x<=900;x+=18) candidates.push({x,y,score:Math.hypot((x-505)*.8,y-475)});
+      }
+      candidates.sort((a,b)=>a.score-b.score);
+      for (const guest of guests) {
+        const name = guest.name.toUpperCase();
+        const width = Math.min(850, measure.measureText(name).width);
+        const height = size*1.15;
+        const spot = candidates.find(({x,y}) => fits(x,y,width,height) && placed.every(box =>
+          Math.abs(x-box.x) > (width+box.width)/2+14 || Math.abs(y-box.y) > (height+box.height)/2+12));
+        if (!spot) return null;
+        placed.push({x:spot.x,y:spot.y,width,height});
+        positions.push({name,x:spot.x,y:spot.y});
+      }
+      return positions;
+    }
+    function renderNames() {
+      layer.replaceChildren();
+      if (!guests.length) return;
+      let size = guests.length<16?32:guests.length<40?25:guests.length<80?19:15;
+      let positions = null;
+      while (size>=7 && !positions) positions=layout(size--);
+      if (!positions) positions=layout(7) || [];
+      for (const item of positions) {
+        const text = document.createElementNS('http://www.w3.org/2000/svg','text');
+        text.classList.add('map-name');
+        text.setAttribute('x',item.x); text.setAttribute('y',item.y);
+        text.setAttribute('font-size',size+1);
+        text.textContent=item.name;
+        layer.appendChild(text);
+      }
+    }
+    function addGuest(event, draw = true) {
+      const key = event.name.trim().toLocaleLowerCase()+'|'+(event.country||'').trim().toLocaleLowerCase();
+      if (!event.name || seen.has(key)) return;
+      seen.add(key); guests.push(event); if (draw) renderNames();
+    }
+    function showWelcome(event) {
+      document.getElementById('guest-name').textContent=event.name;
+      document.getElementById('guest-role').textContent=event.role||'Attendee';
+      const flag=document.getElementById('flag');
+      const country=document.getElementById('country-label');
+      const file=flags[(event.country||'').toLowerCase().trim()];
+      flag.hidden=!file; flag.removeAttribute('src');
+      country.textContent=file?'':(event.country||'');
+      if (file) {flag.src='../assets/'+file; flag.alt=event.country+' flag'; flag.onerror=()=>{flag.hidden=true;country.textContent=event.country||'';};}
+      wall.classList.add('hidden'); welcome.classList.add('visible');
+      setTimeout(()=>{
+        welcome.classList.remove('visible'); wall.classList.remove('hidden');
+        setTimeout(()=>{addGuest(event);presenting=false;nextWelcome();},650);
+      },5000);
+    }
+    function nextWelcome() {
+      if (presenting || !queue.length) return;
+      presenting=true; showWelcome(queue.shift());
+    }
+    function showError(message) {connection.textContent=message;connection.style.display='block';}
+    function clearError() {connection.style.display='none';}
+    async function loadInitial() {
+      if (!SummitApi.configured()) {showError('Set the Apps Script /exec URL in SummitApi.js.');return;}
+      try {
+        let snapshot=null;
+        do {
+          const batch=await SummitApi.events(cursor);
+          if (snapshot===null) snapshot=batch.latestCursor;
+          for (const event of batch.events) {
+            if (event.id<=snapshot) addGuest(event, false);
+            else queue.push(event);
+          }
+          cursor=batch.cursor;
+        } while (cursor<snapshot);
+        renderNames();
+        clearError(); nextWelcome();
+        setInterval(poll,1700);
+        document.addEventListener('visibilitychange',()=>{if (!document.hidden) poll();});
+      } catch (error) {showError('Sheet connection: '+error.message);setTimeout(loadInitial,5000);}
+    }
+    async function poll() {
+      if (polling) return;
+      polling=true;
+      try {
+        const batch=await SummitApi.events(cursor);
+        for (const event of batch.events) queue.push(event);
+        cursor=batch.cursor;
+        clearError(); nextWelcome();
+        if (cursor<batch.latestCursor) setTimeout(poll,0);
+      } catch (error) {showError('Sheet connection: '+error.message);}
+      finally {polling=false;}
+    }
+    document.fonts.ready.then(renderNames);
+    loadInitial();
+  </script>
 </body>
-
 </html>
