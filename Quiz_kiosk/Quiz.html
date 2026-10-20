@@ -11,6 +11,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
         rel="stylesheet">
+    <script src="../assets/jsQR.js"></script>
 
     <style>
         /* --- BRAND COLORS & SYSTEM VARS --- */
@@ -250,6 +251,71 @@
         }
 
         .name-field input::placeholder { color: #cbd5e1; }
+
+        .scan-dialog {
+            position: fixed;
+            inset: 0;
+            z-index: 40;
+            display: grid;
+            place-items: center;
+            padding: 1rem;
+            background: rgba(6, 2, 20, 0.88);
+            backdrop-filter: blur(12px);
+        }
+        .scan-dialog[hidden] { display: none; }
+        .scan-panel {
+            width: min(100%, 650px);
+            max-height: 94vh;
+            overflow-y: auto;
+            padding: clamp(1.2rem, 3vw, 2.2rem);
+            border: 1px solid rgba(217, 70, 239, 0.5);
+            border-radius: 28px;
+            background: #17092c;
+            text-align: center;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.55);
+        }
+        .scan-panel h2 { font: 700 clamp(1.4rem, 3vw, 2rem) var(--font-heading); }
+        .scan-panel p { color: var(--color-text-muted); margin: 0.7rem 0 1rem; }
+        .scan-preview {
+            position: relative;
+            width: min(100%, 420px);
+            aspect-ratio: 1;
+            margin: 0 auto 1rem;
+            overflow: hidden;
+            border: 2px solid var(--color-purple);
+            border-radius: 20px;
+            background: #080410;
+        }
+        .scan-preview video { width: 100%; height: 100%; object-fit: cover; }
+        .scan-preview::after {
+            content: '';
+            position: absolute;
+            inset: 12%;
+            border: 3px solid #5af8e6;
+            border-radius: 18px;
+            pointer-events: none;
+        }
+        .scan-status { min-height: 2.5rem; color: #e2e8f0; }
+        .scan-status.error { color: #fca5a5; }
+        .scan-cancel {
+            padding: 0.9rem 1.2rem;
+            border: 0;
+            border-radius: 12px;
+            color: white;
+            background: rgba(255, 255, 255, 0.12);
+            font: 700 1rem var(--font-body);
+            cursor: pointer;
+        }
+        .guest-banner {
+            margin-bottom: 1rem;
+            padding: 1rem 1.3rem;
+            border: 1px solid rgba(90, 248, 230, 0.4);
+            border-radius: 18px;
+            background: rgba(90, 248, 230, 0.09);
+            font-size: 1.05rem;
+            line-height: 1.5;
+        }
+        .guest-banner strong { color: #5af8e6; }
 
         .begin-btn {
             position: relative;
@@ -913,7 +979,7 @@
             <section id="screen-welcome" class="screen active">
                 <div class="logo-wrapper">
                     <div class="logo-glow"></div>
-                    <img src="../assets/africa_logo_v2.png" alt="Africa Rare Diseases Summit Logo" class="app-logo"
+                    <img src="../assets/africa_logo_v2.png" alt="Africa Rare Disease Summit Logo" class="app-logo"
                         onerror="this.src='assets/africa_logo.png'">
                 </div>
 
@@ -921,13 +987,8 @@
                     <h1 class="hero-title">Rare Recognition Quiz</h1>
                     <p class="hero-subtitle">Test your knowledge of rare diseases</p>
                 </div>
-                <form id="welcome-form" class="welcome-content">
-                    <label class="name-field" for="participant-name">
-                        Your name
-                        <input id="participant-name" name="participant-name" type="text" maxlength="80"
-                            placeholder="Enter your name" autocomplete="name" required>
-                    </label>
-                    <button id="btn-begin" class="begin-btn" type="submit">
+                <div class="welcome-content">
+                    <button id="btn-begin" class="begin-btn" type="button">
                         Begin the quiz challenge
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
                             stroke-linejoin="round">
@@ -935,7 +996,7 @@
                             <polyline points="12 5 19 12 12 19"></polyline>
                         </svg>
                     </button>
-                </form>
+                </div>
             </section>
 
             <!-- SCREEN 2: DISEASE CATEGORIES -->
@@ -949,6 +1010,8 @@
                         <p class="nav-subtitle">Choose a category to answer its questions</p>
                     </div>
                 </div>
+
+                <div id="guest-banner" class="guest-banner" role="status"></div>
 
                 <div id="categories-grid" class="categories-grid">
                     <!-- Dynamic rendering via JS -->
@@ -1022,6 +1085,15 @@
 
         </main>
         <div id="confetti-layer" class="confetti-layer" aria-hidden="true"></div>
+        <div id="scan-dialog" class="scan-dialog" role="dialog" aria-modal="true" aria-labelledby="scan-title" hidden>
+            <div class="scan-panel">
+                <h2 id="scan-title">Scan your badge QR code</h2>
+                <p>Hold your badge inside the frame to see your recommended quiz.</p>
+                <div class="scan-preview"><video id="scan-video" autoplay muted playsinline></video></div>
+                <p id="scan-status" class="scan-status" role="status" aria-live="polite">Starting camera…</p>
+                <button id="scan-cancel" class="scan-cancel" type="button">Cancel</button>
+            </div>
+        </div>
 
         <!-- QUIZ ENGINE SCRIPT -->
         <script>
@@ -1466,11 +1538,29 @@
             let currentQuestionIndex = 0;
             let userAnswers = []; // selected option index for each question
             let participantName = '';
+            let badgeCategory = '';
+            let recommendedQuizIds = [];
             let answerLocked = false;
             let nextReady = false;
             let answerTimer = null;
             // Paste the deployed Google Apps Script web app URL here after deployment.
-            const SCORE_ENDPOINT = 'https://script.google.com/macros/s/AKfycbygFMDCp8jtWjr1XNCwfN6oRYcZf0B6G9Xr4GWGSl2HUxuOTYhRsdQQ6clQecvmUeJUNw/exec';
+            const SCORE_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwbMiXwRMDlVgzB20uvU5Q5Eni-Msi85N_CRQRlM9jovmazd26lA-MfiaKyS_2tEAodSA/exec';
+            const QUIZ_RECOMMENDATIONS = {
+                'Gaucher-ASMD': ['gaucher', 'asmd'],
+                'Gaucher-MPS': ['gaucher', 'mps-i'],
+                'GD-ASMD': ['gaucher', 'asmd'],
+                'MPS-POMPE': ['mps-i', 'pompe'],
+                'Pompe-Fabry': ['pompe', 'fabry'],
+                'Pompe-Fabry-MPS': ['pompe', 'fabry', 'mps-i'],
+                'N/A': QUIZ_DATA.map(quiz => quiz.id),
+                'PAG': QUIZ_DATA.map(quiz => quiz.id)
+            };
+            const scanVideo = document.getElementById('scan-video');
+            const scanCanvas = document.createElement('canvas');
+            const scanContext = scanCanvas.getContext('2d', { willReadFrequently: true });
+            let scanStream = null;
+            let scanTimer = null;
+            let scanBusy = false;
 
             /* --- AUDIO REMOVED --- */
             function playSound(type) {
@@ -1491,24 +1581,8 @@
 
             /* --- INITIALIZATION & EVENT BINDINGS --- */
             document.addEventListener('DOMContentLoaded', () => {
-                renderCategoryCards();
-
-                document.getElementById('welcome-form').addEventListener('submit', event => {
-                    event.preventDefault();
-                    const input = document.getElementById('participant-name');
-                    participantName = input.value.trim();
-                    if (!participantName) {
-                        input.setCustomValidity('Please enter your name.');
-                        input.reportValidity();
-                        return;
-                    }
-                    input.setCustomValidity('');
-                    playSound('click');
-                    showScreen('screen-categories');
-                });
-                document.getElementById('participant-name').addEventListener('input', event => {
-                    event.target.setCustomValidity('');
-                });
+                document.getElementById('btn-begin').addEventListener('click', openScanDialog);
+                document.getElementById('scan-cancel').addEventListener('click', closeScanDialog);
 
                 // Submit Answer Button
                 document.getElementById('btn-submit-answer').addEventListener('click', () => {
@@ -1519,17 +1593,104 @@
                     playSound('click');
                     clearTimeout(answerTimer);
                     participantName = '';
-                    document.getElementById('participant-name').value = '';
+                    badgeCategory = '';
+                    recommendedQuizIds = [];
+                    selectedSpecialty = null;
                     showScreen('screen-welcome');
                 });
             });
+
+            function setScanStatus(message, isError = false) {
+                const status = document.getElementById('scan-status');
+                status.textContent = message;
+                status.classList.toggle('error', isError);
+            }
+
+            async function openScanDialog() {
+                document.getElementById('scan-dialog').hidden = false;
+                setScanStatus('Starting camera…');
+                scanBusy = false;
+                try {
+                    if (!window.jsQR) throw new Error('QR decoder did not load.');
+                    if (!navigator.mediaDevices?.getUserMedia) throw new Error('Camera access needs HTTPS or localhost.');
+                    scanStream = await navigator.mediaDevices.getUserMedia({
+                        audio: false,
+                        video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
+                    });
+                    if (document.getElementById('scan-dialog').hidden) {
+                        scanStream.getTracks().forEach(track => track.stop());
+                        scanStream = null;
+                        return;
+                    }
+                    scanVideo.srcObject = scanStream;
+                    await scanVideo.play();
+                    setScanStatus('Ready to scan your badge.');
+                    scanFrame();
+                } catch (error) {
+                    setScanStatus('Camera unavailable: ' + error.message, true);
+                }
+            }
+
+            function closeScanDialog() {
+                document.getElementById('scan-dialog').hidden = true;
+                clearTimeout(scanTimer);
+                scanTimer = null;
+                if (scanStream) scanStream.getTracks().forEach(track => track.stop());
+                scanStream = null;
+                scanVideo.pause();
+                scanVideo.srcObject = null;
+            }
+
+            function scanFrame() {
+                if (document.getElementById('scan-dialog').hidden || !scanStream) return;
+                if (!scanBusy && scanVideo.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA && scanVideo.videoWidth) {
+                    const scale = Math.min(1, 960 / Math.max(scanVideo.videoWidth, scanVideo.videoHeight));
+                    scanCanvas.width = Math.round(scanVideo.videoWidth * scale);
+                    scanCanvas.height = Math.round(scanVideo.videoHeight * scale);
+                    scanContext.drawImage(scanVideo, 0, 0, scanCanvas.width, scanCanvas.height);
+                    const pixels = scanContext.getImageData(0, 0, scanCanvas.width, scanCanvas.height);
+                    const decoded = jsQR(pixels.data, pixels.width, pixels.height, { inversionAttempts: 'attemptBoth' });
+                    if (decoded) handleScannedQr(decoded.data);
+                }
+                if (!document.getElementById('scan-dialog').hidden) scanTimer = setTimeout(scanFrame, 250);
+            }
+
+            function handleScannedQr(raw) {
+                if (scanBusy) return;
+                const fields = String(raw || '').trim().split('|').map(value => value.trim());
+                const category = Object.keys(QUIZ_RECOMMENDATIONS).find(
+                    label => label.toLowerCase() === (fields[3] || '').toLowerCase()
+                );
+                if (fields.length !== 4 || !fields[0] || !category) {
+                    setScanStatus('This badge QR code is invalid. Please scan a summit badge.', true);
+                    return;
+                }
+                scanBusy = true;
+                participantName = fields[0].slice(0, 80);
+                badgeCategory = category;
+                recommendedQuizIds = QUIZ_RECOMMENDATIONS[category];
+                closeScanDialog();
+                renderCategoryCards();
+                document.getElementById('guest-banner').innerHTML =
+                    `<strong>${escapeHtml(participantName)}</strong> · ${escapeHtml(category)}<br>` +
+                    (category === 'N/A' || category === 'PAG'
+                        ? 'All quiz categories are available.'
+                        : 'Recommended quizzes for your badge are shown below.');
+                showScreen('screen-categories');
+            }
+
+            function escapeHtml(value) {
+                return String(value).replace(/[&<>"']/g, char => ({
+                    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+                })[char]);
+            }
 
             /* --- RENDER SPECIALTY CARDS --- */
             function renderCategoryCards() {
                 const grid = document.getElementById('categories-grid');
                 grid.innerHTML = '';
 
-                QUIZ_DATA.forEach(cat => {
+                recommendedQuizIds.map(id => QUIZ_DATA.find(quiz => quiz.id === id)).filter(Boolean).forEach(cat => {
                     const card = document.createElement('div');
                     card.className = 'category-card';
                     card.onclick = () => selectSpecialty(cat.id);
