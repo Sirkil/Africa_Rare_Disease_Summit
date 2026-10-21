@@ -276,6 +276,19 @@
         }
         .scan-panel h2 { font: 700 clamp(1.4rem, 3vw, 2rem) var(--font-heading); }
         .scan-panel p { color: var(--color-text-muted); margin: 0.7rem 0 1rem; }
+        .entry-options { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin: 1.4rem 0; }
+        .entry-card {
+            min-height: 150px; padding: 1.2rem; border: 1px solid rgba(90, 248, 230, 0.4);
+            border-radius: 20px; background: rgba(255, 255, 255, 0.07); color: white;
+            font: 700 1.2rem var(--font-heading); cursor: pointer;
+        }
+        .entry-card span { display: block; margin-bottom: 0.7rem; font-size: 2rem; }
+        .entry-card:hover, .entry-card:focus-visible { border-color: #5af8e6; background: rgba(90, 248, 230, 0.13); }
+        .entry-method[hidden] { display: none; }
+        .entry-name-form { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+        .entry-name-form .name-field { width: 100%; }
+        .entry-name-form .primary-btn { width: 100%; }
+        @media (max-width: 480px) { .entry-options { grid-template-columns: 1fr; } .entry-card { min-height: 100px; } }
         .scan-preview {
             position: relative;
             width: min(100%, 420px);
@@ -1087,10 +1100,27 @@
         <div id="confetti-layer" class="confetti-layer" aria-hidden="true"></div>
         <div id="scan-dialog" class="scan-dialog" role="dialog" aria-modal="true" aria-labelledby="scan-title" hidden>
             <div class="scan-panel">
-                <h2 id="scan-title">Scan your badge QR code</h2>
-                <p>Hold your badge inside the frame to see your recommended quiz.</p>
-                <div class="scan-preview"><video id="scan-video" autoplay muted playsinline></video></div>
-                <p id="scan-status" class="scan-status" role="status" aria-live="polite">Starting camera…</p>
+                <h2 id="scan-title">How would you like to begin?</h2>
+                <div id="entry-choices" class="entry-method">
+                    <p>Scan your summit badge or enter your name.</p>
+                    <div class="entry-options">
+                        <button id="choose-scan" class="entry-card" type="button"><span aria-hidden="true">▣</span>Scan QR badge</button>
+                        <button id="choose-name" class="entry-card" type="button"><span aria-hidden="true">✎</span>Type your name</button>
+                    </div>
+                </div>
+                <div id="entry-scan" class="entry-method" hidden>
+                    <p>Hold your badge inside the frame to see your recommended quizzes.</p>
+                    <div class="scan-preview"><video id="scan-video" autoplay muted playsinline></video></div>
+                    <p id="scan-status" class="scan-status" role="status" aria-live="polite"></p>
+                    <button id="scan-back" class="scan-cancel" type="button">Back to choices</button>
+                </div>
+                <form id="entry-name-form" class="entry-method entry-name-form" hidden>
+                    <label class="name-field" for="participant-name">Your name
+                        <input id="participant-name" type="text" maxlength="80" autocomplete="name" placeholder="Enter your full name" required>
+                    </label>
+                    <button class="primary-btn" type="submit">See all quiz categories</button>
+                    <button id="name-back" class="scan-cancel" type="button">Back to choices</button>
+                </form>
                 <button id="scan-cancel" class="scan-cancel" type="button">Cancel</button>
             </div>
         </div>
@@ -1581,8 +1611,14 @@
 
             /* --- INITIALIZATION & EVENT BINDINGS --- */
             document.addEventListener('DOMContentLoaded', () => {
-                document.getElementById('btn-begin').addEventListener('click', openScanDialog);
+                document.getElementById('btn-begin').addEventListener('click', openEntryDialog);
                 document.getElementById('scan-cancel').addEventListener('click', closeScanDialog);
+                document.getElementById('choose-scan').addEventListener('click', openScanDialog);
+                document.getElementById('choose-name').addEventListener('click', () => showEntryMethod('entry-name-form'));
+                document.getElementById('scan-back').addEventListener('click', showEntryChoices);
+                document.getElementById('name-back').addEventListener('click', showEntryChoices);
+                document.getElementById('entry-name-form').addEventListener('submit', submitTypedName);
+                document.getElementById('participant-name').addEventListener('input', event => event.target.setCustomValidity(''));
 
                 // Submit Answer Button
                 document.getElementById('btn-submit-answer').addEventListener('click', () => {
@@ -1606,8 +1642,47 @@
                 status.classList.toggle('error', isError);
             }
 
-            async function openScanDialog() {
+            function showEntryMethod(id) {
+                document.querySelectorAll('#scan-dialog .entry-method').forEach(panel => { panel.hidden = panel.id !== id; });
+                document.getElementById('scan-title').textContent = id === 'entry-scan' ? 'Scan your badge QR code' :
+                    id === 'entry-name-form' ? 'Enter your name' : 'How would you like to begin?';
+                if (id === 'entry-name-form') document.getElementById('participant-name').focus();
+            }
+
+            function openEntryDialog() {
                 document.getElementById('scan-dialog').hidden = false;
+                document.getElementById('participant-name').value = '';
+                showEntryMethod('entry-choices');
+                document.getElementById('choose-scan').focus();
+            }
+
+            function showEntryChoices() {
+                stopScan();
+                showEntryMethod('entry-choices');
+                document.getElementById('choose-scan').focus();
+            }
+
+            function submitTypedName(event) {
+                event.preventDefault();
+                const name = document.getElementById('participant-name').value.trim().replace(/\s+/g, ' ');
+                if (!name) {
+                    document.getElementById('participant-name').setCustomValidity('Please enter your name.');
+                    document.getElementById('participant-name').reportValidity();
+                    return;
+                }
+                document.getElementById('participant-name').setCustomValidity('');
+                participantName = name.slice(0, 80);
+                badgeCategory = 'N/A';
+                recommendedQuizIds = QUIZ_RECOMMENDATIONS['N/A'];
+                closeScanDialog();
+                renderCategoryCards();
+                document.getElementById('guest-banner').innerHTML =
+                    `<strong>${escapeHtml(participantName)}</strong> · N/A<br>All quiz categories are available.`;
+                showScreen('screen-categories');
+            }
+
+            async function openScanDialog() {
+                showEntryMethod('entry-scan');
                 setScanStatus('Starting camera…');
                 scanBusy = false;
                 try {
@@ -1617,7 +1692,7 @@
                         audio: false,
                         video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
                     });
-                    if (document.getElementById('scan-dialog').hidden) {
+                    if (document.getElementById('scan-dialog').hidden || document.getElementById('entry-scan').hidden) {
                         scanStream.getTracks().forEach(track => track.stop());
                         scanStream = null;
                         return;
@@ -1633,6 +1708,10 @@
 
             function closeScanDialog() {
                 document.getElementById('scan-dialog').hidden = true;
+                stopScan();
+            }
+
+            function stopScan() {
                 clearTimeout(scanTimer);
                 scanTimer = null;
                 if (scanStream) scanStream.getTracks().forEach(track => track.stop());
@@ -1642,7 +1721,7 @@
             }
 
             function scanFrame() {
-                if (document.getElementById('scan-dialog').hidden || !scanStream) return;
+                if (document.getElementById('scan-dialog').hidden || document.getElementById('entry-scan').hidden || !scanStream) return;
                 if (!scanBusy && scanVideo.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA && scanVideo.videoWidth) {
                     const scale = Math.min(1, 960 / Math.max(scanVideo.videoWidth, scanVideo.videoHeight));
                     scanCanvas.width = Math.round(scanVideo.videoWidth * scale);
@@ -1652,7 +1731,7 @@
                     const decoded = jsQR(pixels.data, pixels.width, pixels.height, { inversionAttempts: 'attemptBoth' });
                     if (decoded) handleScannedQr(decoded.data);
                 }
-                if (!document.getElementById('scan-dialog').hidden) scanTimer = setTimeout(scanFrame, 250);
+                if (!document.getElementById('scan-dialog').hidden && !document.getElementById('entry-scan').hidden) scanTimer = setTimeout(scanFrame, 250);
             }
 
             function handleScannedQr(raw) {

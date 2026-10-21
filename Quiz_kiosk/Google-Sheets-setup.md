@@ -2,6 +2,8 @@
 
 The kiosk writes one row per completed quiz to the sheet with columns **Timestamp**, **Name**, **Selected Quiz**, and **Score**. The timestamp comes from Apps Script when the quiz is submitted. The score is stored as text in a fraction such as `2/8`.
 
+After **Begin the quiz challenge**, visitors can scan a badge or type their name. A typed name uses the **N/A** category and can choose any quiz. The **Selected Quiz** column records the quiz they choose when they complete it, for either entry method.
+
 1. Open the [quiz score sheet](https://docs.google.com/spreadsheets/d/1sGyiqPA4KVPSpfFAR1t8-ECw_B64euOQMqTEAdcV6is/edit?gid=0#gid=0). Set row 1 of the tab with `gid=0` to `Timestamp`, `Name`, `Selected Quiz`, `Score` in columns A–D.
 2. Choose **Extensions → Apps Script**. Replace the editor contents with [Code.gs](Code.gs) and save.
 3. Choose **Deploy → Manage deployments**, edit the existing web app deployment, select **New version**, and deploy. Keep **Execute as** set to **Me** and **Who has access** set to **Anyone**. The existing `/exec` URL in [Quiz.html](Quiz.html) can remain the same.
