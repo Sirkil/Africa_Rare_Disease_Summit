@@ -6,9 +6,7 @@
   <title>Africa Rare Disease Summit · Registration Wall</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js"></script>
-  <script src="SummitLive.js"></script>
-  <!-- Sheet integration paused: <script src="SummitApi.js"></script> -->
+  <script src="SummitApi.js"></script>
   <style>
     *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#080410;color:#fff;font-family:Poppins,Arial,sans-serif}
     .background-video,.video-fallback,.video-shade{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
@@ -17,27 +15,26 @@
     .video-shade{background:linear-gradient(90deg,rgba(0,0,0,.45),rgba(18,13,57,.38)),radial-gradient(circle at 50% 50%,transparent,rgba(0,0,0,.25))}
     .view{position:absolute;inset:0;transition:opacity .65s ease,transform .65s ease}
     #wall{opacity:1;transform:scale(1)}#wall.hidden{opacity:0;transform:scale(.975);pointer-events:none}
-    #welcome{bottom:auto;height:70vh;height:70dvh;opacity:0;transform:translateY(18px);pointer-events:none;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2vh 4vw}
+    #welcome{opacity:0;transform:translateY(18px);pointer-events:none;display:flex;flex-direction:column;align-items:center;text-align:center;padding:4vh 4vw 6vh}
     #welcome.visible{opacity:1;transform:translateY(0)}
     .map{position:absolute;left:4.5vw;top:2vh;width:min(69vw,90vh);height:auto;aspect-ratio:10821/11526;max-height:96vh;overflow:visible}
     .map-name{fill:#fff;font-weight:600;text-anchor:middle;dominant-baseline:middle;paint-order:stroke;stroke:#210b40;stroke-width:3px;stroke-linejoin:round;letter-spacing:.2px}
     .wall-brand{position:absolute;right:5vw;top:6vh}
     .wall-brand img{display:block;width:clamp(230px,23vw,420px);height:auto}
-    .welcome-brand{margin:0 auto 1vh}
-    .welcome-brand img{display:block;height:clamp(75px,11vh,140px);width:auto;max-width:70vw}
-    .prefix{font-size:clamp(18px,2vw,34px);font-weight:400;letter-spacing:.38em;text-transform:uppercase;text-shadow:0 0 16px #7339d9}
-    .summit-title{font-size:clamp(26px,3vw,56px);font-weight:700;line-height:1.15;text-transform:uppercase;white-space:nowrap;margin:.5vh 0 1.5vh;text-shadow:0 0 23px #8c47d9,0 0 45px #58219d}
-    .flag-wrap{height:clamp(45px,7vh,85px);display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:1vh}
+    .welcome-brand{margin:0 auto 5vh}
+    .welcome-brand img{display:block;width:clamp(280px,26vw,450px);height:auto}
+    .prefix{font-size:clamp(23px,2.5vw,42px);font-weight:400;letter-spacing:.38em;text-transform:uppercase;text-shadow:0 0 16px #7339d9}
+    .summit-title{font-size:clamp(34px,4vw,72px);font-weight:700;line-height:1.15;text-transform:uppercase;white-space:nowrap;margin:1.5vh 0 5vh;text-shadow:0 0 23px #8c47d9,0 0 45px #58219d}
+    .flag-wrap{height:clamp(70px,12vh,130px);display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:3vh}
     .flag-wrap:before,.flag-wrap:after{content:"";height:1px;width:min(16vw,220px);background:linear-gradient(90deg,transparent,#bba5d9)}
     .flag-wrap:after{transform:rotate(180deg)}
-    #flag{display:block;height:clamp(45px,7vh,85px);width:auto;max-width:150px;object-fit:contain;filter:drop-shadow(0 0 15px #7445ed)}
+    #flag{display:block;height:clamp(70px,10vh,110px);width:auto;max-width:190px;object-fit:contain;filter:drop-shadow(0 0 15px #7445ed)}
     #flag[hidden]{display:none}
-    #country-label{font-size:clamp(20px,2.4vw,38px)}
-    #guest-name{font-size:clamp(32px,4.2vw,72px);font-weight:600;text-transform:uppercase;line-height:1.1;max-width:94vw;text-shadow:0 0 20px #753dd8,0 0 40px #512195}
-    #guest-role{font-family:Georgia,serif;font-size:clamp(22px,2.3vw,42px);font-weight:400;font-style:italic;margin-top:1vh;text-shadow:0 0 15px #7135c4}
-    #connection{position:absolute;right:18px;bottom:14px;z-index:4;font-size:15px;color:#fff;background:rgba(13,4,37,.82);border:1px solid rgba(181,143,255,.4);border-radius:12px;padding:9px 13px}
-    #pair-code{font-weight:700;letter-spacing:.18em;color:#5af8e6}
-    @media(max-aspect-ratio:1/1){.map{width:94vw;left:3vw;top:15vh}.wall-brand{left:50%;right:auto;top:2vh;transform:translateX(-50%)}.summit-title{white-space:normal}}
+    #country-label{font-size:clamp(24px,2.8vw,44px)}
+    #guest-name{font-size:clamp(44px,5.2vw,88px);font-weight:600;text-transform:uppercase;line-height:1.1;max-width:94vw;text-shadow:0 0 20px #753dd8,0 0 40px #512195}
+    #guest-role{font-family:Georgia,serif;font-size:clamp(28px,3vw,52px);font-weight:400;font-style:italic;margin-top:4vh;text-shadow:0 0 15px #7135c4}
+    #connection{position:absolute;right:18px;bottom:14px;font-size:12px;color:#ffbac7;background:rgba(0,0,0,.55);border-radius:8px;padding:7px 10px;display:none}
+    @media(max-aspect-ratio:1/1){.map{width:94vw;left:3vw;top:15vh}.wall-brand{left:50%;right:auto;top:2vh;transform:translateX(-50%)}.summit-title{white-space:normal}.welcome-brand{margin-bottom:5vh}.flag-wrap{margin-bottom:2vh}}
   </style>
 </head>
 <body>
@@ -62,27 +59,21 @@
     <div id="guest-name"></div>
     <div id="guest-role"></div>
   </section>
-  <div id="connection" role="status">Pairing code: <span id="pair-code">…</span> · <span id="connection-state">Connecting…</span></div>
+  <div id="connection" role="status"></div>
 
   <script>
     const wall = document.getElementById('wall');
     const welcome = document.getElementById('welcome');
     const layer = document.getElementById('names-layer');
     const connection = document.getElementById('connection');
-    const pairCode = document.getElementById('pair-code');
-    const connectionState = document.getElementById('connection-state');
     const polygon = document.getElementById('clip-polygon').getAttribute('points').split(' ').map(pair => pair.split(',').map(Number));
     const flags = {'algeria':'Algeria.png','argentina':'Argentine.png','argentine':'Argentine.png','egypt':'Egypt.png','libya':'Libya.png','morocco':'Morocco.png','south africa':'South_Africa.png','tunisia':'Tunisia.png','uk':'UK.png','united kingdom':'UK.png','us':'US.png','usa':'US.png','united states':'US.png','united states of america':'US.png'};
     const guests = [];
     const seen = new Set();
     const queue = [];
-    const storedEvents = [];
-    const seenEvents = new Set();
-    const ROOM_KEY = 'summit-live-room-v1';
-    const EVENTS_KEY = 'summit-live-events-v1';
+    let cursor = 0;
     let presenting = false;
-    let peer = null;
-    let room = '';
+    let polling = false;
     const measure = document.createElement('canvas').getContext('2d');
 
     function inside(x, y) {
@@ -158,79 +149,41 @@
       if (presenting || !queue.length) return;
       presenting=true; showWelcome(queue.shift());
     }
-    function setConnectionState(message) { connectionState.textContent = message; }
-    function saveRoom() {
-      try { localStorage.setItem(ROOM_KEY, room); } catch (_) { /* Pairing still works until reload. */ }
-      pairCode.textContent = room;
-    }
-    function loadStored() {
+    function showError(message) {connection.textContent=message;connection.style.display='block';}
+    function clearError() {connection.style.display='none';}
+    async function loadInitial() {
+      if (!SummitApi.configured()) {showError('Set the Apps Script /exec URL in SummitApi.js.');return;}
       try {
-        const saved = JSON.parse(localStorage.getItem(EVENTS_KEY) || '[]');
-        if (!Array.isArray(saved)) return;
-        for (const item of saved) {
-          const guest = SummitLive.cleanGuest(item);
-          if (!guest || typeof item.id !== 'string' || seenEvents.has(item.id)) continue;
-          const event = {id:item.id,...guest};
-          storedEvents.push(event);
-          seenEvents.add(event.id);
-          addGuest(event, false);
-        }
-      } catch (_) { setConnectionState('Saved names unavailable'); }
-      renderNames();
+        let snapshot=null;
+        do {
+          const batch=await SummitApi.events(cursor);
+          if (snapshot===null) snapshot=batch.latestCursor;
+          for (const event of batch.events) {
+            if (event.id<=snapshot) addGuest(event, false);
+            else queue.push(event);
+          }
+          cursor=batch.cursor;
+        } while (cursor<snapshot);
+        renderNames();
+        clearError(); nextWelcome();
+        setInterval(poll,1700);
+        document.addEventListener('visibilitychange',()=>{if (!document.hidden) poll();});
+      } catch (error) {showError('Sheet connection: '+error.message);setTimeout(loadInitial,5000);}
     }
-    function acceptScan(message, scanner) {
-      if (!message || message.type !== 'scan' || !/^[\w-]{8,80}$/.test(String(message.id || ''))) return;
-      const guest = SummitLive.cleanGuest(message.guest);
-      if (!guest) return;
-      if (!seenEvents.has(message.id)) {
-        const event = {id:message.id,...guest};
-        try {
-          localStorage.setItem(EVENTS_KEY, JSON.stringify([...storedEvents,event]));
-        } catch (_) {
-          setConnectionState('Storage full — scan not saved');
-          return;
-        }
-        storedEvents.push(event);
-        seenEvents.add(event.id);
-        queue.push(event);
-        nextWelcome();
-      }
-      if (scanner.open) scanner.send({type:'ack',id:message.id});
+    async function poll() {
+      if (polling) return;
+      polling=true;
+      try {
+        const batch=await SummitApi.events(cursor);
+        for (const event of batch.events) queue.push(event);
+        cursor=batch.cursor;
+        clearError(); nextWelcome();
+        if (cursor<batch.latestCursor) setTimeout(poll,0);
+      } catch (error) {showError('Sheet connection: '+error.message);}
+      finally {polling=false;}
     }
-    function startPeer() {
-      if (!window.Peer) { setConnectionState('Live connection library did not load'); return; }
-      const instance = new Peer(SummitLive.ROOM_PREFIX + room);
-      peer = instance;
-      setConnectionState('Connecting…');
-      instance.on('open', () => setConnectionState('Waiting for scanner'));
-      instance.on('connection', scanner => {
-        scanner.on('open', () => setConnectionState('Scanner connected'));
-        scanner.on('data', message => acceptScan(message, scanner));
-        scanner.on('close', () => setConnectionState('Waiting for scanner'));
-        scanner.on('error', () => setConnectionState('Scanner disconnected'));
-      });
-      instance.on('disconnected', () => {
-        setConnectionState('Reconnecting…');
-        setTimeout(() => { if (peer === instance && instance.disconnected && !instance.destroyed) instance.reconnect(); }, 1500);
-      });
-      instance.on('error', error => {
-        if (peer !== instance) return;
-        if (error.type === 'unavailable-id') {
-          instance.destroy();
-          room = SummitLive.roomCode();
-          saveRoom();
-          setTimeout(startPeer, 500);
-        } else {
-          setConnectionState('Connection error — reload display');
-        }
-      });
-    }
-    try { room = localStorage.getItem(ROOM_KEY) || SummitLive.roomCode(); }
-    catch (_) { room = SummitLive.roomCode(); }
-    saveRoom();
-    loadStored();
     document.fonts.ready.then(renderNames);
-    startPeer();
+    loadInitial();
   </script>
 </body>
 </html>

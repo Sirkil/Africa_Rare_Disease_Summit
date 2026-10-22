@@ -7,9 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="../assets/jsQR.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js"></script>
-  <script src="SummitLive.js"></script>
-  <!-- Sheet integration paused: <script src="SummitApi.js"></script> -->
+  <script src="SummitApi.js?v=4"></script>
   <style>
     *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0b021a;color:white;font-family:Poppins,sans-serif}
     #reader,#reader video{position:absolute!important;inset:0;width:100%!important;height:100%!important;object-fit:cover!important;border:0!important}
@@ -18,16 +16,6 @@
     .header,.status{position:absolute;left:50%;transform:translateX(-50%);z-index:4;background:rgba(13,4,37,.87);border:1px solid rgba(181,143,255,.38);box-shadow:0 12px 36px rgba(0,0,0,.4);backdrop-filter:blur(14px);text-align:center}
     .header{top:max(12px,env(safe-area-inset-top));border-radius:20px;padding:8px 16px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;font-weight:600;letter-spacing:.16em}
     .header img{display:block;height:clamp(66px,11vh,110px);width:auto;max-width:78vw;object-fit:contain}
-    .fullscreen-button{position:absolute;top:max(12px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));z-index:5;width:44px;height:44px;display:grid;place-items:center;padding:0;border:1px solid rgba(181,143,255,.6);border-radius:14px;background:rgba(13,4,37,.87);color:#fff;cursor:pointer;backdrop-filter:blur(14px)}
-    .fullscreen-button svg{width:22px;height:22px}
-    .fullscreen-button:focus-visible{outline:2px solid #5af8e6;outline-offset:3px}
-    .pair-panel{position:absolute;top:max(105px,calc(env(safe-area-inset-top) + 95px));left:50%;transform:translateX(-50%);z-index:5;width:min(360px,calc(100% - 24px));padding:10px 12px;border:1px solid rgba(181,143,255,.5);border-radius:14px;background:rgba(13,4,37,.88);text-align:center;box-shadow:0 12px 36px rgba(0,0,0,.4);backdrop-filter:blur(14px);font-size:13px}
-    .pair-controls{display:flex;gap:8px;margin-top:6px}
-    .pair-controls input{width:100%;min-width:0;padding:9px;border:1px solid #b687ff;border-radius:8px;background:#fff;color:#160a2d;font:600 16px Poppins,sans-serif;letter-spacing:.12em;text-transform:uppercase}
-    .pair-controls button,.change-pair{padding:9px 12px;border:0;border-radius:8px;background:#5af8e6;color:#15052b;font:600 13px Poppins,sans-serif;cursor:pointer}
-    .change-pair{display:none;margin:6px auto 0}
-    .pair-panel.connected .pair-controls{display:none}
-    .pair-panel.connected .change-pair{display:block}
     .status{bottom:max(24px,env(safe-area-inset-bottom));border-radius:18px;padding:18px 22px;width:calc(100% - 32px);max-width:520px;font-size:15px;line-height:1.5}
     .status.ok{border-color:#62dcbc}.status.error{border-color:#ff8da0}
   </style>
@@ -35,29 +23,17 @@
 <body>
   <div id="reader"></div><div class="reticle"></div>
   <div class="header"><img src="../assets/africa_logo_v2.png" alt="Africa Rare Disease Summit"><span>QR SCANNER</span></div>
-  <button class="fullscreen-button" id="fullscreenButton" type="button" aria-label="Full screen" title="Full screen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/></svg></button>
-  <div class="pair-panel" id="pairPanel"><span id="pairState">Enter the code shown on the registration screen</span><div class="pair-controls"><input id="pairInput" type="text" maxlength="8" placeholder="Display code" autocomplete="off" autocapitalize="characters" aria-label="Registration screen pairing code"><button id="pairButton" type="button">Connect</button></div><button class="change-pair" id="changePair" type="button">Change code</button></div>
-  <div class="status" id="status" role="status">Starting camera…</div>
+  <div class="status" id="status" role="status">Connecting to registration sheet…</div>
   <script>
     const statusEl = document.getElementById('status');
-    const fullscreenButton = document.getElementById('fullscreenButton');
-    const pairPanel = document.getElementById('pairPanel');
-    const pairInput = document.getElementById('pairInput');
-    const pairState = document.getElementById('pairState');
-    const PAIR_KEY = 'summit-live-pair-v1';
-    let peer = null;
-    let connection = null;
-    let room = '';
-    let retryTimer = null;
-    let pending = null;
-    let resendTimer = null;
+    let cursor = 0;
+    let busy = false;
     let recentText = '';
     let recentAt = 0;
+    let sheetReady = false;
     let scannerVideo = null;
     let scanTimer = null;
     let scanPass = 0;
-    let nativeMisses = 0;
-    let barcodeDetector = null;
     const scanCanvas = document.createElement('canvas');
     const scanContext = scanCanvas.getContext('2d', {willReadFrequently:true});
 
@@ -65,122 +41,48 @@
       statusEl.textContent = message;
       statusEl.className = 'status ' + kind;
     }
-    function isFullscreen() {
-      return Boolean(document.fullscreenElement || document.webkitFullscreenElement);
-    }
-    function updateFullscreenButton() {
-      const label = isFullscreen() ? 'Exit full screen' : 'Full screen';
-      fullscreenButton.setAttribute('aria-label', label);
-      fullscreenButton.title = label;
-      fullscreenButton.setAttribute('aria-pressed', String(isFullscreen()));
-    }
-    fullscreenButton.addEventListener('click', async () => {
-      try {
-        if (isFullscreen()) {
-          const exit = document.exitFullscreen || document.webkitExitFullscreen;
-          if (exit) await exit.call(document);
-        } else {
-          const enter = document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen;
-          if (!enter) throw new Error('This browser does not support full screen for webpages.');
-          await enter.call(document.documentElement);
-        }
-        updateFullscreenButton();
-      } catch (error) {
-        status(error.message || 'Could not enter full screen.', 'error');
-      }
-    });
-    document.addEventListener('fullscreenchange', updateFullscreenButton);
-    document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
-    function setPairState(message, connected = false) {
-      pairState.textContent = message;
-      pairPanel.classList.toggle('connected', connected);
-    }
-    function scheduleReconnect() {
-      clearTimeout(retryTimer);
-      if (room) retryTimer = setTimeout(attemptConnection, 2000);
-    }
-    function sendPending() {
-      if (!pending) return;
-      if (connection?.open) {
-        connection.send({type:'scan',id:pending.id,guest:pending.guest});
-        status('Sending ' + pending.guest.name + ' to the screen…');
-      } else {
-        status('Waiting for the registration screen to reconnect…');
-      }
-      clearTimeout(resendTimer);
-      resendTimer = setTimeout(sendPending, 1200);
-    }
-    function attemptConnection() {
-      if (!room || !peer?.open || connection?.open) return;
-      if (connection) connection.close();
-      setPairState('Connecting to display ' + room + '…');
-      const next = peer.connect(SummitLive.ROOM_PREFIX + room, {reliable:true});
-      connection = next;
-      const timeout = setTimeout(() => { if (connection === next && !next.open) next.close(); }, 6500);
-      next.on('open', () => {
-        clearTimeout(timeout);
-        if (connection !== next) return;
-        setPairState('Connected to display ' + room, true);
-        if (pending) sendPending();
-      });
-      next.on('data', message => {
-        if (connection !== next || !pending || message?.type !== 'ack' || message.id !== pending.id) return;
-        clearTimeout(resendTimer);
-        recentText = pending.raw;
-        recentAt = Date.now();
-        const name = pending.guest.name;
-        pending = null;
-        status('✓ ' + name + ' is on the registration screen.', 'ok');
-        setTimeout(() => { if (!pending) status('Ready for the next QR code.'); }, 1300);
-      });
-      next.on('close', () => {
-        clearTimeout(timeout);
-        if (connection !== next) return;
-        connection = null;
-        setPairState('Display disconnected — reconnecting…');
-        scheduleReconnect();
-      });
-      next.on('error', () => {
-        if (connection === next) next.close();
-      });
-    }
-    function connectToRoom() {
-      const code = pairInput.value.trim().toUpperCase();
-      if (!/^[A-HJ-NP-Z2-9]{8}$/.test(code)) {
-        setPairState('Enter the 8-character code shown on the display.');
-        return;
-      }
-      room = code;
-      try { localStorage.setItem(PAIR_KEY, room); } catch (_) { /* Re-pair after reload. */ }
-      if (connection) { connection.close(); connection = null; }
-      clearTimeout(retryTimer);
-      attemptConnection();
-    }
-    document.getElementById('pairButton').addEventListener('click', connectToRoom);
-    pairInput.addEventListener('keydown', event => { if (event.key === 'Enter') connectToRoom(); });
-    document.getElementById('changePair').addEventListener('click', () => {
-      setPairState('Enter the code shown on the registration screen');
-      pairInput.focus();
-    });
-    function startPeer() {
-      if (!window.Peer) { setPairState('Live connection library did not load'); return; }
-      peer = new Peer();
-      peer.on('open', () => { if (room) attemptConnection(); });
-      peer.on('disconnected', () => {
-        setPairState('Connection lost — reconnecting…');
-        setTimeout(() => { if (peer?.disconnected && !peer.destroyed) peer.reconnect(); }, 1500);
-      });
-      peer.on('error', () => {
-        setPairState('Display unavailable — retrying…');
-        scheduleReconnect();
-      });
-    }
-    function onScan(raw) {
-      if (pending || (raw === recentText && Date.now() - recentAt < 10000)) return;
-      const guest = SummitLive.parseQr(raw);
+    const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+    async function onScan(raw) {
+      if (busy || (raw === recentText && Date.now() - recentAt < 10000)) return;
+      const guest = SummitApi.parseQr(raw);
       if (!guest) { status('This QR code has no valid name.', 'error'); return; }
-      pending = {id:crypto.randomUUID ? crypto.randomUUID() : Date.now() + '-' + Math.random().toString(36).slice(2),guest,raw};
-      sendPending();
+      busy = true;
+      const requestId = (crypto.randomUUID ? crypto.randomUUID() : Date.now() + '-' + Math.random());
+      try {
+        if (!sheetReady) {
+          status('Connecting to the registration sheet…');
+          cursor = (await SummitApi.events(0)).latestCursor;
+          sheetReady = true;
+        }
+        status('Saving ' + guest.name + '…');
+        await SummitApi.submit({...guest, requestId});
+        const deadline = Date.now() + 25000;
+        let resent = false;
+        while (Date.now() < deadline) {
+          await pause(1100);
+          const batch = await SummitApi.events(cursor);
+          cursor = batch.cursor;
+          if (batch.events.some(event => event.requestId === requestId)) {
+            recentText = raw;
+            recentAt = Date.now();
+            status('✓ ' + guest.name + ' is on the registration screen.', 'ok');
+            await pause(2500);
+            status('Ready for the next QR code.');
+            return;
+          }
+          if (!resent && Date.now() > deadline - 16000) {
+            resent = true;
+            await SummitApi.submit({...guest, requestId});
+          }
+        }
+        status('Could not confirm this scan. Check the sheet connection and scan again.', 'error');
+      } catch (error) {
+        sheetReady = false;
+        status(error.message || 'Sheet connection failed.', 'error');
+      } finally {
+        busy = false;
+      }
     }
 
     function decodeFrame() {
@@ -188,60 +90,54 @@
       return jsQR(pixels.data, pixels.width, pixels.height, {inversionAttempts:'dontInvert'})?.data || null;
     }
 
-    async function scanFrame() {
-      try {
-        if (!pending && scannerVideo?.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA && scannerVideo.videoWidth) {
-          let decoded = null;
-          if (barcodeDetector) {
-            try {
-              const codes = await barcodeDetector.detect(scannerVideo);
-              decoded = codes.find(code => code.format === 'qr_code')?.rawValue || null;
-              if (!decoded) nativeMisses++;
-            } catch (_) { barcodeDetector = null; }
-          }
-          if (!decoded && (!barcodeDetector || nativeMisses % 3 === 0)) {
-            const sourceWidth = scannerVideo.videoWidth;
-            const sourceHeight = scannerVideo.videoHeight;
-            const centered = scanPass++ % 2 === 1;
-            if (centered) {
-              // A white margin helps with badges whose code is tightly cropped.
-              const side = Math.min(sourceWidth, sourceHeight) * .82;
-              if (scanCanvas.width !== 552 || scanCanvas.height !== 552) { scanCanvas.width = 552; scanCanvas.height = 552; }
-              scanContext.fillStyle = '#fff';
-              scanContext.fillRect(0, 0, 552, 552);
-              scanContext.drawImage(scannerVideo,
-                (sourceWidth-side)/2, (sourceHeight-side)/2, side, side,
-                36, 36, 480, 480);
-            } else {
-              const scale = Math.min(1, 720 / Math.max(sourceWidth, sourceHeight));
-              const width = Math.round(sourceWidth * scale);
-              const height = Math.round(sourceHeight * scale);
-              if (scanCanvas.width !== width || scanCanvas.height !== height) { scanCanvas.width = width; scanCanvas.height = height; }
-              scanContext.drawImage(scannerVideo, 0, 0, width, height);
-            }
-            decoded = decodeFrame();
-          }
-          if (decoded) onScan(decoded);
+    function scanFrame() {
+      if (!scannerVideo) return;
+      if (!busy && scannerVideo.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA && scannerVideo.videoWidth) {
+        const sourceWidth = scannerVideo.videoWidth;
+        const sourceHeight = scannerVideo.videoHeight;
+        const scale = Math.min(1, 960 / Math.max(sourceWidth, sourceHeight));
+        scanCanvas.width = Math.round(sourceWidth * scale);
+        scanCanvas.height = Math.round(sourceHeight * scale);
+        scanContext.drawImage(scannerVideo, 0, 0, scanCanvas.width, scanCanvas.height);
+        let decoded = decodeFrame();
+        if (!decoded) {
+          // Reframe tightly cropped printed codes with a digital white margin.
+          const fraction = scanPass++ % 2 === 0 ? 1 : 0.72;
+          const side = Math.min(sourceWidth, sourceHeight) * fraction;
+          const inset = 48;
+          const contentSize = 640;
+          scanCanvas.width = contentSize + inset * 2;
+          scanCanvas.height = contentSize + inset * 2;
+          scanContext.fillStyle = '#fff';
+          scanContext.fillRect(0, 0, scanCanvas.width, scanCanvas.height);
+          scanContext.drawImage(scannerVideo,
+            (sourceWidth - side) / 2, (sourceHeight - side) / 2, side, side,
+            inset, inset, contentSize, contentSize);
+          decoded = decodeFrame();
         }
-      } finally {
-        scanTimer = setTimeout(scanFrame, 100);
+        if (decoded) onScan(decoded);
       }
+      scanTimer = setTimeout(scanFrame, 300);
     }
 
     async function start() {
+      if (!SummitApi.configured()) {
+        status('Set the Apps Script /exec URL in SummitApi.js first.', 'error');
+        return;
+      }
       try {
         if (!window.jsQR) throw new Error('QR decoder did not load. Reload the page.');
         if (!navigator.mediaDevices?.getUserMedia) throw new Error('Camera access requires HTTPS or localhost.');
-        if (window.BarcodeDetector) {
-          try {
-            if ((await BarcodeDetector.getSupportedFormats()).includes('qr_code')) {
-              barcodeDetector = new BarcodeDetector({formats:['qr_code']});
-            }
-          } catch (_) { /* Use the bundled QR decoder. */ }
-        }
+        const sheetConnection = SummitApi.events(0).then(batch => {
+          cursor = batch.latestCursor;
+          sheetReady = true;
+          status('Ready — show the full QR with a little white badge area around it.');
+        }).catch(error => {
+          status('Camera ready, but sheet connection failed: ' + (error.message || error), 'error');
+        });
         const stream = await navigator.mediaDevices.getUserMedia({
           audio:false,
-          video:{facingMode:{exact:'user'},width:{ideal:1280},height:{ideal:720}}
+          video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}}
         });
         scannerVideo = document.createElement('video');
         scannerVideo.autoplay = true;
@@ -250,17 +146,12 @@
         scannerVideo.srcObject = stream;
         document.getElementById('reader').replaceChildren(scannerVideo);
         await scannerVideo.play();
-        status('Ready — show a QR code to the front camera.');
         scanFrame();
+        await sheetConnection;
       } catch (error) {
-        status(error.name === 'OverconstrainedError'
-          ? 'Front camera unavailable on this device.'
-          : 'Camera unavailable: ' + (error.message || error), 'error');
+        status('Camera unavailable: ' + (error.message || error), 'error');
       }
     }
-    try { room = localStorage.getItem(PAIR_KEY) || ''; } catch (_) { /* Pair manually. */ }
-    if (room) pairInput.value = room;
-    startPeer();
     start();
   </script>
 </body>
