@@ -1,0 +1,12 @@
+{
+  "name": "Africa Rare Disease Summit QR Scanner",
+  "short_name": "Summit Scanner",
+  "start_url": "./QrCode_Scanner.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b021a",
+  "theme_color": "#0b021a",
+  "icons": [
+    {"src": "../assets/africa_logo_v2.png", "sizes": "2846x1600", "type": "image/png"}
+  ]
+}

@@ -19,6 +19,9 @@
     .fullscreen-button{position:absolute;top:max(12px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));z-index:5;width:44px;height:44px;display:grid;place-items:center;padding:0;border:1px solid rgba(181,143,255,.6);border-radius:14px;background:rgba(13,4,37,.87);color:#fff;cursor:pointer;backdrop-filter:blur(14px)}
     .fullscreen-button svg{width:22px;height:22px}
     .fullscreen-button:focus-visible{outline:2px solid #5af8e6;outline-offset:3px}
+    .camera-button{position:absolute;top:calc(max(12px,env(safe-area-inset-top)) + 54px);right:max(12px,env(safe-area-inset-right));z-index:5;min-height:44px;padding:8px 12px;border:1px solid rgba(181,143,255,.6);border-radius:14px;background:rgba(13,4,37,.87);color:#fff;font:600 12px Poppins,sans-serif;cursor:pointer;backdrop-filter:blur(14px)}
+    .camera-button:focus-visible{outline:2px solid #5af8e6;outline-offset:3px}
+    .camera-button:disabled{opacity:.6;cursor:wait}
     .status{bottom:max(24px,env(safe-area-inset-bottom));border-radius:18px;padding:18px 22px;width:calc(100% - 32px);max-width:520px;font-size:15px;line-height:1.5}
     .status.ok{border-color:#62dcbc}.status.error{border-color:#ff8da0}
   </style>
@@ -27,16 +30,19 @@
   <div id="reader"></div><div class="reticle"></div>
   <div class="header"><img src="../assets/africa_logo_v2.png" alt="Africa Rare Disease Summit"><span>QR SCANNER</span></div>
   <button class="fullscreen-button" id="fullscreenButton" type="button" aria-label="Full screen" title="Full screen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/></svg></button>
+  <button class="camera-button" id="cameraButton" type="button" disabled>Use front camera</button>
   <div class="status" id="status" role="status">Connecting to registration sheet…</div>
   <script>
     const statusEl = document.getElementById('status');
     const fullscreenButton = document.getElementById('fullscreenButton');
+    const cameraButton = document.getElementById('cameraButton');
     let cursor = 0;
     let busy = false;
     let recentText = '';
     let recentAt = 0;
     let sheetReady = false;
     let scannerVideo = null;
+    let cameraFacing = 'environment';
     let scanTimer = null;
     let scanPass = 0;
     const scanCanvas = document.createElement('canvas');
@@ -151,6 +157,59 @@
       scanTimer = setTimeout(scanFrame, 300);
     }
 
+    function stopCamera() {
+      clearTimeout(scanTimer);
+      scanTimer = null;
+      if (scannerVideo) {
+        scannerVideo.srcObject?.getTracks().forEach(track => track.stop());
+        scannerVideo.remove();
+        scannerVideo = null;
+      }
+    }
+
+    async function startCamera(facing, exact = false) {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio:false,
+        video:{facingMode:exact ? {exact:facing} : {ideal:facing},width:{ideal:1920},height:{ideal:1080}}
+      });
+      const video = document.createElement('video');
+      video.autoplay = true;
+      video.muted = true;
+      video.playsInline = true;
+      video.srcObject = stream;
+      try {
+        await video.play();
+      } catch (error) {
+        stream.getTracks().forEach(track => track.stop());
+        throw error;
+      }
+      scannerVideo = video;
+      cameraFacing = video.srcObject.getVideoTracks()[0].getSettings().facingMode || facing;
+      document.getElementById('reader').replaceChildren(video);
+      cameraButton.textContent = cameraFacing === 'user' ? 'Use rear camera' : 'Use front camera';
+      cameraButton.disabled = false;
+      scanFrame();
+    }
+
+    cameraButton.addEventListener('click', async () => {
+      const previousFacing = cameraFacing;
+      const nextFacing = previousFacing === 'user' ? 'environment' : 'user';
+      cameraButton.disabled = true;
+      status('Switching camera…');
+      stopCamera();
+      try {
+        await startCamera(nextFacing, true);
+        status('Ready — show the full QR with a little white badge area around it.');
+      } catch (error) {
+        try {
+          await startCamera(previousFacing);
+          status((nextFacing === 'user' ? 'Front' : 'Rear') + ' camera unavailable on this device.', 'error');
+        } catch (restoreError) {
+          status('Camera unavailable: ' + (restoreError.message || restoreError), 'error');
+        }
+      }
+    });
+
     async function start() {
       if (!SummitApi.configured()) {
         status('Set the Apps Script /exec URL in SummitApi.js first.', 'error');
@@ -166,23 +225,10 @@
         }).catch(error => {
           status('Camera ready, but sheet connection failed: ' + (error.message || error), 'error');
         });
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio:false,
-          video:{facingMode:{exact:'user'},width:{ideal:1920},height:{ideal:1080}}
-        });
-        scannerVideo = document.createElement('video');
-        scannerVideo.autoplay = true;
-        scannerVideo.muted = true;
-        scannerVideo.playsInline = true;
-        scannerVideo.srcObject = stream;
-        document.getElementById('reader').replaceChildren(scannerVideo);
-        await scannerVideo.play();
-        scanFrame();
+        await startCamera('environment');
         await sheetConnection;
       } catch (error) {
-        status(error.name === 'OverconstrainedError'
-          ? 'Front camera unavailable on this device.'
-          : 'Camera unavailable: ' + (error.message || error), 'error');
+        status('Camera unavailable: ' + (error.message || error), 'error');
       }
     }
     start();
