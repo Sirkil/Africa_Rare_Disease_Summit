@@ -112,7 +112,7 @@
     function renderNames() {
       layer.replaceChildren();
       if (!guests.length) return;
-      let size = guests.length<16?32:guests.length<40?25:guests.length<80?19:15;
+      let size = guests.length<16?64:guests.length<40?50:guests.length<80?38:30;
       let positions = null;
       while (size>=7 && !positions) positions=layout(size--);
       if (!positions) positions=layout(7) || [];
